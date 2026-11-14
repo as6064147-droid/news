@@ -1,5 +1,5 @@
 // =====================================================
-//  الملف ده بس اللي هتعدّل فيه
+//  Configuration File
 // =====================================================
 
 const firebaseConfig = {
@@ -11,5 +11,5 @@ const firebaseConfig = {
   appId: "1:267877115512:web:1efcccf07d090a438e6f8d"
 };
 
-// إيميل المدير (إنت) — اكتبه بحروف صغيرة
+// Admin Email
 const ADMIN_EMAIL = "as6064147@gmail.com";
