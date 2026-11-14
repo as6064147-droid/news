@@ -36,7 +36,7 @@
 <div id="gate"></div>
 <div id="app" hidden>
   <div class="bar"><b>👑 Admin Dashboard</b>
-    <div style="display:flex;gap:6px;flex-wrap:wrap"><a href="index.html" target="_blank">Open Site ↗</a><button onclick="auth.signOut().then(()=>location.reload())">Sign Out</button></div></div>
+    <div style="display:flex;gap:6px;flex-wrap:wrap"><a href="index.html" target="_blank">Open Site ↗</a><button onclick="localStorage.removeItem('isAdminLoggedIn'); location.reload();">Sign Out</button></div></div>
   <div class="wrap wide">
     <div class="tabs" id="tabs">
       <button data-t="news" class="on">📰 Articles</button>
@@ -93,15 +93,43 @@
 const $ = id => document.getElementById(id);
 let S, SAVED;
 
-if (!CONFIGURED) document.body.innerHTML = notConfiguredMsg();
-else authGate($('gate'), '👑 Admin Sign In', async u => {
-  if (u.email.toLowerCase() !== ADMIN) return denied($('gate'), 'This account is not authorized as admin.');
+function checkAdminLogin() {
+  const gate = $('gate');
+  if (localStorage.getItem('isAdminLoggedIn') === 'true') {
+    gate.hidden = true;
+    initAdmin();
+    return;
+  }
+  gate.hidden = false;
+  gate.innerHTML = `<div class="login"><h2>👑 Admin Sign In</h2>
+    <label>Username<input id="adminUser" type="text" dir="ltr" placeholder="Username"></label>
+    <label>Password<input id="adminPass" type="password" dir="ltr" placeholder="Password"></label>
+    <button class="btn" id="adminLoginBtn">Sign In</button>
+    <p class="msg" id="adminMsg"></p></div>`;
+
+  gate.querySelector('#adminLoginBtn').onclick = () => {
+    const u = gate.querySelector('#adminUser').value.trim();
+    const p = gate.querySelector('#adminPass').value.trim();
+    if (u === 'ahmedsheko123' && p === 'Aa123456789') {
+      localStorage.setItem('isAdminLoggedIn', 'true');
+      gate.hidden = true;
+      initAdmin();
+    } else {
+      gate.querySelector('#adminMsg').textContent = 'Invalid username or password';
+    }
+  };
+}
+
+async function initAdmin() {
   $('app').hidden = false;
   S = await loadSettings(); SAVED = JSON.parse(JSON.stringify(S));
   fillForms();
-  articleManager($('news'), { admin: true, email: u.email.toLowerCase(), cats: S.cats });
+  articleManager($('news'), { admin: true, email: 'ahmedsheko123@admin.com', cats: S.cats });
   loadEditors();
-});
+}
+
+if (!CONFIGURED) document.body.innerHTML = notConfiguredMsg();
+else checkAdminLogin();
 
 $('tabs').onclick = e => {
   const b = e.target.closest('button'); if (!b) return;
