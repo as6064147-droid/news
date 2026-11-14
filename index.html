@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>جريدة فنية</title>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script src="config.js"></script>
+<script src="common.js"></script>
+<style>
+:root{color-scheme:light}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:"Segoe UI",Tahoma,sans-serif;background:var(--bg);color:var(--text);line-height:1.7}
+.wrap{max-width:1200px;margin:auto;padding:0 20px}
+.topbar{background:var(--topbarBg);color:var(--topbarText);font-size:13px}
+.topbar .wrap{display:flex;justify-content:space-between;padding:6px 20px}
+.mast{display:flex;align-items:center;justify-content:center;gap:22px;padding:26px 0 16px;border-bottom:4px double var(--line);flex-wrap:wrap;text-align:center}
+.logo{width:110px;height:110px;border-radius:50%;background:var(--logoBg);border:4px solid var(--logoRing);overflow:hidden;display:grid;place-items:center;flex-shrink:0;box-shadow:0 4px 14px #0002}
+.logo img{width:100%;height:100%;object-fit:cover}
+.logo b{color:var(--logoText);font-size:52px;font-family:Georgia,serif}
+.mast h1{font-family:Georgia,"Times New Roman",serif;font-size:clamp(44px,8vw,86px);line-height:1;font-weight:900;color:var(--title)}
+.mast h1 span{color:var(--titleAccent)}
+.mast p{letter-spacing:2px;color:var(--muted);margin-top:6px}
+nav.cats{display:flex;justify-content:center;gap:6px;flex-wrap:wrap;padding:10px;background:var(--navBg);border-bottom:1px solid var(--line)}
+nav.cats button{background:none;border:0;padding:6px 14px;font:inherit;font-weight:700;cursor:pointer;color:var(--navText);border-radius:4px}
+nav.cats button.on,nav.cats button:hover{background:var(--navActiveBg);color:var(--navActiveText)}
+.ticker{display:flex;background:var(--tickerBg);color:var(--tickerText);border:1px solid var(--line);margin:18px 0;overflow:hidden}
+.ticker b{background:var(--breakBg);color:var(--breakText);padding:8px 16px;white-space:nowrap;z-index:1}
+.ticker div{flex:1;overflow:hidden;white-space:nowrap;padding:8px 0}
+.ticker span{display:inline-block;padding-right:100%;animation:run 35s linear infinite}
+@keyframes run{from{transform:translateX(-100%)}to{transform:translateX(100%)}}
+.img{background:linear-gradient(135deg,var(--primary),var(--topbarBg));position:relative;overflow:hidden;display:grid;place-items:center}
+.img img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.img i{font-style:normal;color:#fff;opacity:.3;font-size:50px;font-family:Georgia,serif;font-weight:900}
+.label{display:inline-block;background:var(--labelBg);color:var(--labelText);font-size:12px;font-weight:700;padding:2px 10px;margin-bottom:8px}
+.date{font-size:13px;color:var(--muted)}
+h2,h3{color:var(--headline)}
+.lead{display:grid;grid-template-columns:1.6fr 1fr;gap:24px;margin-bottom:30px}
+.main-story{cursor:pointer}.main-story .img{aspect-ratio:16/9}
+.main-story h2{font-family:Georgia,serif;font-size:clamp(24px,3.4vw,36px);line-height:1.3;margin:12px 0 8px}
+.side{display:flex;flex-direction:column;gap:16px}
+.side .s{display:grid;grid-template-columns:110px 1fr;gap:12px;cursor:pointer;padding-bottom:16px;border-bottom:1px solid var(--line)}
+.side .img{aspect-ratio:1}.side .img i{font-size:26px}
+.side h3{font-size:16px;line-height:1.45}
+.sec-title{font-family:Georgia,serif;font-size:26px;border-right:6px solid var(--primary);padding-right:12px;margin:10px 0 18px;color:var(--headline)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:24px;margin-bottom:40px}
+.card{background:var(--cardBg);cursor:pointer;transition:.2s;box-shadow:0 1px 3px #0001}
+.card:hover{transform:translateY(-3px);box-shadow:0 8px 20px #0002}
+.card .img{aspect-ratio:16/10}.card .t{padding:14px}
+.card h3{font-size:18px;line-height:1.45;margin-bottom:6px}.card p{font-size:14px;color:var(--cardText)}
+.main-story:hover h2,.side .s:hover h3,.card:hover h3{color:var(--hover)}
+.empty{text-align:center;padding:60px;color:var(--muted)}
+footer{background:var(--footerBg);color:var(--footerText);text-align:center;padding:30px 20px}
+.reader{position:fixed;inset:0;background:#000a;z-index:40;display:none;overflow:auto;padding:30px 16px}
+.reader.open{display:block}
+.reader article{background:var(--cardBg);max-width:760px;margin:auto;position:relative}
+.reader .img{aspect-ratio:16/9}.reader .t{padding:26px}
+.reader h2{font-family:Georgia,serif;font-size:30px;line-height:1.35;margin:8px 0}
+.reader .body{font-size:18px;margin-top:16px;white-space:pre-line;color:var(--text)}
+.close{position:absolute;top:10px;left:10px;z-index:2;background:#fff;border:0;width:38px;height:38px;border-radius:50%;font-size:22px;cursor:pointer}
+.share{margin-top:20px;background:var(--primary);color:#fff;border:0;padding:8px 18px;border-radius:20px;cursor:pointer;font:inherit}
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#161616;color:#fff;padding:12px 24px;border-radius:30px;opacity:0;transition:.3s;z-index:60;pointer-events:none}
+.toast.show{opacity:1}
+@media(max-width:800px){.lead{grid-template-columns:1fr}.logo{width:80px;height:80px}.logo b{font-size:38px}}
+</style>
+</head>
+<body>
+<div id="page">
+<div class="topbar"><div class="wrap"><span id="today"></span><span>أخبار الفن لحظة بلحظة</span></div></div>
+<div class="wrap">
+  <header class="mast"><div class="logo" id="logo"></div><div><h1 id="nName"></h1><p id="nSlogan"></p></div></header>
+  <nav class="cats" id="cats"></nav>
+  <div class="ticker"><b>عاجل</b><div><span id="tick"></span></div></div>
+  <div id="leadBox"><p class="empty">جاري تحميل الأخبار...</p></div>
+  <h2 class="sec-title" id="secTitle" style="display:none">آخر الأخبار</h2>
+  <div class="grid" id="grid"></div>
+</div>
+<footer>© <span id="year"></span> <span id="fName"></span> — كل الحقوق محفوظة</footer>
+<div class="reader" id="reader" onclick="if(event.target==this)closeReader()"><article id="art"></article></div>
+</div>
+
+<script>
+const $ = id => document.getElementById(id);
+let S = DEFAULTS, ARTS = [], cat = 'الكل';
+const pic = a => `<div class="img">${a.img ? `<img src="${a.img}" alt="" loading="lazy">` : `<i>${esc(S.name)}</i>`}</div>`;
+
+function applySettings() {
+  applyColors(S.colors);
+  const n = S.name || '';
+  $('nName').innerHTML = esc(n.slice(0, -1)) + '<span>' + esc(n.slice(-1)) + '</span>';
+  $('nSlogan').textContent = S.slogan; $('fName').textContent = n; document.title = n + ' | ' + S.slogan;
+  $('logo').innerHTML = S.logo ? `<img src="${S.logo}" alt="">` : `<b>${esc(n.charAt(0))}</b>`;
+  $('tick').textContent = String(S.ticker || '').split(/\n|\|/).map(s => s.trim()).filter(Boolean).join('   ◆   ');
+  $('cats').innerHTML = ['الكل', ...S.cats].map(c => `<button class="${c == cat ? 'on' : ''}" data-c="${esc(c)}">${esc(c)}</button>`).join('');
+}
+$('cats').onclick = e => { const b = e.target.closest('button'); if (!b) return; cat = b.dataset.c; applySettings(); render(); };
+
+function render() {
+  const list = ARTS.filter(a => cat == 'الكل' || a.cat == cat);
+  if (!list.length) { $('leadBox').innerHTML = '<p class="empty">مفيش أخبار هنا لسه</p>'; $('grid').innerHTML = ''; $('secTitle').style.display = 'none'; return; }
+  const pinned = list.find(a => a.pinned) || list[0];
+  const rest = list.filter(a => a !== pinned), side = rest.slice(0, 3), more = rest.slice(3);
+  $('leadBox').innerHTML = `<div class="lead">
+    <div class="main-story" data-id="${pinned.id}">${pic(pinned)}<div style="margin-top:12px"><span class="label">${esc(pinned.cat)}</span>
+      <h2>${esc(pinned.title)}</h2><p>${esc(pinned.sum)}</p><span class="date">${fmtDate(pinned.createdAt)}</span></div></div>
+    <div class="side">${side.map(a => `<div class="s" data-id="${a.id}">${pic(a)}<div><span class="label">${esc(a.cat)}</span><h3>${esc(a.title)}</h3><span class="date">${fmtDate(a.createdAt)}</span></div></div>`).join('')}</div></div>`;
+  $('secTitle').style.display = more.length ? '' : 'none';
+  $('grid').innerHTML = more.map(a => `<div class="card" data-id="${a.id}">${pic(a)}<div class="t"><span class="label">${esc(a.cat)}</span>
+    <h3>${esc(a.title)}</h3><p>${esc(a.sum)}</p><span class="date">${fmtDate(a.createdAt)}</span></div></div>`).join('');
+}
+document.addEventListener('click', e => { const el = e.target.closest('[data-id]'); if (el && !e.target.closest('.reader')) openReader(el.dataset.id); });
+
+function openReader(id) {
+  const a = ARTS.find(x => x.id === id); if (!a) return;
+  $('art').innerHTML = `<button class="close" onclick="closeReader()">×</button>${pic(a)}<div class="t"><span class="label">${esc(a.cat)}</span>
+    <h2>${esc(a.title)}</h2><span class="date">${fmtDate(a.createdAt)}</span><div class="body">${esc(a.body || a.sum)}</div>
+    <button class="share" onclick="share('${a.id}')">🔗 انسخ لينك الخبر</button></div>`;
+  $('reader').classList.add('open'); $('reader').scrollTop = 0;
+  history.replaceState(null, '', '#' + id);
+}
+function closeReader() { $('reader').classList.remove('open'); history.replaceState(null, '', location.pathname); }
+function share(id) { navigator.clipboard.writeText(location.origin + location.pathname + '#' + id).then(() => toast('اتنسخ اللينك')); }
+document.addEventListener('keydown', e => { if (e.key == 'Escape') closeReader(); });
+
+// معاينة من لوحة المدير
+window.addEventListener('message', e => {
+  if (e.origin !== location.origin || !e.data || e.data.type !== 'preview') return;
+  previewed = true; S = e.data.settings; applySettings(); render();
+});
+let previewed = false;
+
+$('today').textContent = new Date().toLocaleDateString('ar-EG', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+$('year').textContent = new Date().getFullYear();
+
+(async () => {
+  if (!CONFIGURED) { $('page').innerHTML = notConfiguredMsg(); return; }
+  applySettings();
+  try {
+    const loaded = await loadSettings(); if (!previewed) { S = loaded; applySettings(); }
+    db.collection('articles').orderBy('createdAt', 'desc').limit(60).onSnapshot(s => {
+      ARTS = s.docs.map(d => ({ id: d.id, ...d.data() }));
+      render();
+      const h = location.hash.slice(1); if (h && ARTS.some(a => a.id === h) && !$('reader').classList.contains('open')) openReader(h);
+    }, err => { $('leadBox').innerHTML = '<p class="empty">مقدرناش نحمّل الأخبار</p>'; console.error(err); });
+  } catch (e) { $('leadBox').innerHTML = '<p class="empty">مقدرناش نحمّل الجريدة</p>'; console.error(e); }
+})();
+</script>
+</body>
+</html>
