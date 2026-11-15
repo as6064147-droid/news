@@ -175,7 +175,11 @@ function adminGate(box, title, onReady) {
   }
 }
 
-/* EDITOR GATE (email + password, must exist in the roles collection) */
+/*
+ * EDITOR GATE
+ * Signs an editor in with USERNAME + PASSWORD. The username is mapped to the
+ * internal Firebase Auth address before the call, so editors never see emails.
+ */
 function authGate(box, title, onUser) {
   box.innerHTML = '<div class="login"><p>Loading...</p></div>';
   auth.onAuthStateChanged(async u => {
@@ -184,28 +188,33 @@ function authGate(box, title, onUser) {
     box.hidden = true;
     onUser(u);
   });
-  function showLogin() {
+  function showLogin(notice) {
     box.hidden = false;
     box.innerHTML = `<div class="login"><h2>${title}</h2>
-      <label>Email<input id="lEmail" type="email" dir="ltr" autocomplete="username"></label>
-      <label>Password<input id="lPass" type="password" dir="ltr" autocomplete="current-password"></label>
+      <label>Username<input id="lUser" type="text" dir="ltr" autocomplete="username" placeholder="username" autocapitalize="none"></label>
+      <label>Password<input id="lPass" type="password" dir="ltr" autocomplete="current-password" placeholder="password"></label>
       <button class="btn" id="lIn">Sign In</button>
-      <button class="link" id="lForgot">Forgot Password?</button>
-      <p class="msg" id="lMsg"></p></div>`;
-    const em = () => box.querySelector('#lEmail').value.trim().toLowerCase();
-    const pw = () => box.querySelector('#lPass').value;
+      <p class="msg" id="lMsg">${esc(notice || '')}</p>
+      <p style="font-size:13px;color:#888;line-height:1.8;margin-top:6px">
+        Ask the admin for your username and password if you don't have them.</p></div>`;
     const msg = t => box.querySelector('#lMsg').textContent = t;
     const go = () => {
-      const b = box.querySelector('#lIn'); b.disabled = true; b.textContent = 'Signing in...';
-      auth.signInWithEmailAndPassword(em(), pw())
+      const user = box.querySelector('#lUser').value.trim();
+      const pass = box.querySelector('#lPass').value;
+      if (!user) return msg('Please enter your username');
+      if (!pass) return msg('Please enter your password');
+
+      const email = (typeof editorUsernameToEmail === 'function') ? editorUsernameToEmail(user) : '';
+      if (!email) return msg('Invalid username');
+
+      const b = box.querySelector('#lIn');
+      b.disabled = true; b.textContent = 'Signing in...'; msg('');
+      auth.signInWithEmailAndPassword(email, pass)
         .catch(e => { msg(authErr(e)); b.disabled = false; b.textContent = 'Sign In'; });
     };
     box.querySelector('#lIn').onclick = go;
     box.querySelector('#lPass').onkeydown = e => { if (e.key === 'Enter') go(); };
-    box.querySelector('#lForgot').onclick = () => {
-      if (!em()) return msg('Please enter your email first');
-      auth.sendPasswordResetEmail(em()).then(() => msg('Password reset email sent!')).catch(e => msg(authErr(e)));
-    };
+    box.querySelector('#lUser').onkeydown = e => { if (e.key === 'Enter') box.querySelector('#lPass').focus(); };
   }
 }
 
