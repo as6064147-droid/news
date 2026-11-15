@@ -1,138 +1,377 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
+    <title>لوحة تحكم المسؤول الشاملة - Admin</title>
+    
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>لوحة تحكم الأدمن الشاملة</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
-    <style>body { font-family: 'Cairo', sans-serif; background-color: #f8fafc; }</style>
-    
-    <!-- Firebase SDKs -->
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
-    <script>
-        const firebaseConfig = {
-            apiKey: "AIzaSyAccVmtHXNNm1eq-rVn-sRRaWa7JqLDTQc",
-            authDomain: "sheko-3817f.firebaseapp.com",
-            projectId: "sheko-3817f",
-            storageBucket: "sheko-3817f.firebasestorage.app",
-            messagingSenderId: "267877115512",
-            appId: "1:267877115512:web:1efcccf07d090a438e6f8d",
-            measurementId: "G-38KXKP8M5C"
-        };
-        if (!firebase.apps.length) {
-            firebase.initializeApp(firebaseConfig);
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Almarai:wght@400;700;800&family=Amiri:wght@400;700&family=Cairo:wght@400;600;700;900&family=Changa:wght@500;700;800&family=Tajawal:wght@400;500;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        :root {
+            --primary-yellow: #facc15;
+            --primary-dark: #0f172a;
+            --accent-gold: #eab308;
+            --site-font: 'Cairo', sans-serif;
+            --base-size: 16px;
         }
-        const db = firebase.firestore();
-    </script>
+        body {
+            font-family: var(--site-font);
+            font-size: var(--base-size);
+            background-color: #f8fafc;
+            color: #0f172a;
+        }
+        .brand-bg { background-color: var(--primary-yellow); }
+        .brand-text { color: var(--primary-yellow); }
+        .brand-border { border-color: var(--primary-yellow); }
+        .dark-bg { background-color: var(--primary-dark); }
+        @keyframes marquee {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+        .animate-ticker {
+            display: inline-block;
+            white-space: nowrap;
+            animation: marquee 28s linear infinite;
+        }
+        .animate-ticker:hover { animation-play-state: paused; }
+        .article-body h3 { font-size: 1.35rem; font-weight: 800; margin: 1.25rem 0 0.5rem; color: #0f172a; border-right: 4px solid var(--primary-yellow); padding-right: 0.75rem; }
+        .article-body blockquote { background: #fefce8; border-right: 4px solid var(--primary-yellow); padding: 1rem 1.25rem; margin: 1.25rem 0; font-weight: 700; border-radius: 0.5rem; color: #1e293b; }
+        .article-body ul { list-style-type: disc; margin-right: 1.5rem; margin-bottom: 1rem; }
+    </style>
+
 </head>
-<body class="bg-slate-50 min-h-screen text-slate-800">
-    <!-- شاشة تسجيل الدخول -->
-    <div id="login-screen" class="flex items-center justify-center min-h-screen p-4">
-        <div class="bg-white p-8 rounded-2xl shadow-xl w-full max-w-md border border-slate-100">
-            <h2 class="text-xl font-bold text-center mb-6 text-slate-800">تسجيل دخول المسؤول (Admin)</h2>
-            <form onsubmit="handleAdminLogin(event)" class="space-y-4">
-                <div>
-                    <label class="block text-sm font-semibold mb-1">اسم المستخدم</label>
-                    <input type="text" id="admin-user" required class="w-full px-3 py-2 rounded-xl border border-slate-200" placeholder="ahmedsheko123">
+<body class="min-h-screen bg-slate-100">
+
+    <!-- Admin Login Screen -->
+    <div id="admin-login-screen" class="min-h-screen flex items-center justify-center p-4 dark-bg">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden border-t-8 brand-border">
+            <div class="p-8">
+                <div class="w-16 h-16 dark-bg brand-text rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-md border-2 brand-border">
+                    <i class="fa-solid fa-shield-halved text-2xl"></i>
                 </div>
-                <div>
-                    <label class="block text-sm font-semibold mb-1">كلمة المرور</label>
-                    <input type="password" id="admin-pass" required class="w-full px-3 py-2 rounded-xl border border-slate-200">
-                </div>
-                <div id="admin-error" class="text-red-500 text-sm hidden">بيانات الدخول غير صحيحة</div>
-                <button type="submit" class="w-full bg-indigo-600 text-white font-bold py-2.5 rounded-xl">دخول المسؤول</button>
-            </form>
-        </div>
-    </div>
-    
-    <!-- لوحة التحكم -->
-    <div id="dashboard-screen" class="hidden min-h-screen p-6 max-w-4xl mx-auto">
-        <div class="flex justify-between items-center mb-6 bg-white p-4 rounded-xl border shadow-sm">
-            <h2 class="font-bold text-lg text-indigo-700">لوحة تحكم المسؤول الشاملة</h2>
-            <div class="space-x-2 space-x-reverse">
-                <a href="index.html" target="_blank" class="text-xs bg-slate-100 px-3 py-2 rounded-lg font-semibold">فتح الموقع ↗</a>
-                <button onclick="logout()" class="text-red-600 text-sm font-semibold">تسجيل الخروج</button>
-            </div>
-        </div>
-        
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div class="bg-white p-6 rounded-xl border shadow-sm">
-                <h3 class="font-bold mb-4 text-slate-800">إدارة الأخبار المحفوظة</h3>
-                <div id="admin-articles-list" class="space-y-2 text-sm text-slate-600">
-                    <p>جاري تحميل المقالات...</p>
-                </div>
-            </div>
-            <div class="bg-white p-6 rounded-xl border shadow-sm">
-                <h3 class="font-bold mb-4 text-slate-800">إعدادات النظام والاتصال</h3>
-                <p class="text-sm text-slate-500 mb-4">متصل بقاعدة بيانات Firebase (`sheko-3817f`). يمكنك التحكم بالكامل في الأخبار وحذفها أو تعديلها.</p>
-                <div class="p-3 bg-indigo-50 text-indigo-700 rounded-xl text-sm font-semibold text-center">
-                    الحالة: متصل وجاهز للعمل 🟢
+                <h2 class="text-2xl font-black text-center text-slate-900">لوحة الإدارة العليا</h2>
+                <p class="text-center text-slate-500 text-sm mt-1 mb-6">التحكم في الهوية البصرية، الألوان، الخطوط، والمحررين</p>
+                
+                <form id="admin-login-form" class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-bold text-slate-700 mb-1">اسم المستخدم (الأدمن)</label>
+                        <input type="text" id="admin-user" required placeholder="AHMEDD" class="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:border-yellow-500 focus:outline-none text-left font-bold" dir="ltr">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-bold text-slate-700 mb-1">كلمة المرور</label>
+                        <input type="password" id="admin-pass" required placeholder="••••••••" class="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:border-yellow-500 focus:outline-none text-left" dir="ltr">
+                    </div>
+                    <div id="admin-error" class="hidden bg-red-50 text-red-600 text-xs font-bold p-3 rounded-xl border border-red-200 text-center">
+                        بيانات دخول المسؤول غير صحيحة!
+                    </div>
+                    <button type="submit" class="w-full dark-bg hover:bg-slate-800 brand-text font-black py-3 rounded-xl shadow-md transition">
+                        دخول لوحة الإدارة <i class="fa-solid fa-lock-open mr-1"></i>
+                    </button>
+                </form>
+                <div class="mt-6 text-center">
+                    <a href="index.html" class="text-xs text-slate-500 hover:text-slate-800 font-semibold">&rarr; العودة للصفحة الرئيسية</a>
                 </div>
             </div>
         </div>
     </div>
 
-    <script>
-        function handleAdminLogin(e) {
-            e.preventDefault();
-            const u = document.getElementById("admin-user").value;
-            const p = document.getElementById("admin-pass").value;
-            if(u === "ahmedsheko123" && p === "Aa123456789") {
-                sessionStorage.setItem("admin_logged", "true");
-                showDash();
-            } else {
-                document.getElementById("admin-error").classList.remove("hidden");
-            }
-        }
-        function showDash() {
-            document.getElementById("login-screen").style.display = "none";
-            document.getElementById("dashboard-screen").style.display = "block";
-            loadAdminArticles();
-        }
-        function logout() {
-            sessionStorage.removeItem("admin_logged");
-            location.reload();
-        }
-        if(sessionStorage.getItem("admin_logged") === "true") {
-            showDash();
-        }
+    <!-- Master Admin Dashboard -->
+    <div id="admin-dashboard" class="hidden">
+        <header class="dark-bg text-white border-b-4 brand-border sticky top-0 z-30 shadow-md">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 py-4 flex flex-wrap justify-between items-center gap-3">
+                <div class="flex items-center gap-3">
+                    <span class="brand-bg text-slate-950 font-black px-3 py-1 rounded-lg text-sm"><i class="fa-solid fa-crown ml-1"></i> الإدارة العليا</span>
+                    <h1 class="font-bold text-base sm:text-lg">إعدادات الجريدة والتحكم الكامل</h1>
+                </div>
+                <div class="flex items-center gap-3">
+                    <a href="editor.html" class="bg-slate-800 hover:bg-slate-700 text-white text-xs font-bold px-3.5 py-2 rounded-lg transition">استوديو المحرر</a>
+                    <a href="index.html" target="_blank" class="brand-bg text-slate-950 text-xs font-black px-3.5 py-2 rounded-lg transition">عرض الموقع</a>
+                    <button onclick="adminLogout()" class="bg-red-600 text-white text-xs font-bold px-3.5 py-2 rounded-lg transition">خروج</button>
+                </div>
+            </div>
+        </header>
 
-        function loadAdminArticles() {
-            const container = document.getElementById("admin-articles-list");
-            db.collection("articles").orderBy("createdAt", "desc").get().then((querySnapshot) => {
-                if(querySnapshot.empty) {
-                    container.innerHTML = "<p class='text-slate-400'>لا توجد أخبار منشورة حالياً.</p>";
-                    return;
-                }
-                let html = "";
-                querySnapshot.forEach((doc) => {
-                    const article = doc.data();
-                    html += `
-                        <div class="p-3 bg-slate-50 rounded-lg border flex justify-between items-center">
-                            <span class="font-semibold truncate max-w-[200px]">${article.title}</span>
-                            <button onclick="deleteArticle('${doc.id}')" class="text-xs bg-red-100 text-red-600 px-3 py-1.5 rounded-lg hover:bg-red-200 transition">حذف</button>
+        <main class="max-w-7xl mx-auto px-4 sm:px-6 py-8 grid grid-cols-1 lg:grid-cols-12 gap-8">
+            <div class="lg:col-span-7 space-y-6">
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
+                    <h2 class="text-xl font-black text-slate-900 mb-6 flex items-center gap-2 border-b pb-3">
+                        <i class="fa-solid fa-palette text-yellow-500"></i> الهوية البصرية واسم الجريدة واللوجو
+                    </h2>
+
+                    <form id="settings-form" class="space-y-5">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-bold text-slate-700 mb-1">اسم الجريدة / الصفحة</label>
+                                <input type="text" id="set-site-name" placeholder="مثال: جريدة الإسكندرية اليوم" class="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:border-yellow-500 focus:outline-none font-bold">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-bold text-slate-700 mb-1">الشعار النصي أسفل الاسم</label>
+                                <input type="text" id="set-tagline" placeholder="الحقيقة كما هي.. تغطية لحظة بلحظة" class="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:border-yellow-500 focus:outline-none">
+                            </div>
                         </div>
-                    `;
-                });
-                container.innerHTML = html;
-            }).catch((error) => {
-                container.innerHTML = "<p class='text-red-500'>خطأ في جلب البيانات من القاعدة.</p>";
+
+                        <div class="bg-slate-50 p-4 rounded-xl border border-slate-200">
+                            <label class="block text-sm font-bold text-slate-800 mb-2">لوجو الجريدة (صورة الشعار)</label>
+                            <div class="flex items-center gap-4">
+                                <img id="set-logo-preview" src="" class="w-16 h-16 rounded-xl object-cover border-2 border-yellow-400 bg-white hidden">
+                                <input type="file" accept="image/*" onchange="handleLogoUpload(this)" class="text-xs bg-white p-2 rounded-lg border border-slate-300 flex-1">
+                            </div>
+                            <input type="hidden" id="set-logo-data">
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-bold text-slate-700 mb-1">نص شريط الأخبار العاجلة المتحرك</label>
+                            <input type="text" id="set-breaking" placeholder="اكتب هنا الأخبار العاجلة التي تظهر في الشريط العلوي..." class="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:border-yellow-500 focus:outline-none">
+                        </div>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2 border-t">
+                            <div>
+                                <label class="block text-sm font-bold text-slate-700 mb-1">نوع الخط العربي للموقع</label>
+                                <select id="set-font" class="w-full px-4 py-2.5 rounded-xl border border-slate-300 bg-white font-bold">
+                                    <option value="'Cairo', sans-serif">خط القاهرة (Cairo - عصري صحفي)</option>
+                                    <option value="'Tajawal', sans-serif">خط تجول (Tajawal - أنيق وواضح)</option>
+                                    <option value="'Almarai', sans-serif">خط المراعي (Almarai - رسمي)</option>
+                                    <option value="'Changa', sans-serif">خط تشانجا (Changa - عريض للعناوين)</option>
+                                    <option value="'Amiri', serif">خط أميري (Amiri - كلاسيكي للجرائد)</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-bold text-slate-700 mb-1">حجم الخط الأساسي</label>
+                                <select id="set-font-size" class="w-full px-4 py-2.5 rounded-xl border border-slate-300 bg-white font-bold">
+                                    <option value="15">متوسط (15px)</option>
+                                    <option value="16" selected>قياسي مريح (16px)</option>
+                                    <option value="18">كبير للقراءة (18px)</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-4 pt-2 border-t">
+                            <div>
+                                <label class="block text-sm font-bold text-slate-700 mb-1">اللون الأساسي (الهوية الصفراء)</label>
+                                <div class="flex items-center gap-2">
+                                    <input type="color" id="set-primary-color" value="#facc15" class="w-12 h-10 rounded cursor-pointer border">
+                                    <span class="text-xs text-slate-500">افتراضي: #facc15</span>
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-bold text-slate-700 mb-1">اللون الداكن (الهيدر والفوتر)</label>
+                                <div class="flex items-center gap-2">
+                                    <input type="color" id="set-dark-color" value="#0f172a" class="w-12 h-10 rounded cursor-pointer border">
+                                    <span class="text-xs text-slate-500">افتراضي: #0f172a</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <button type="submit" id="save-settings-btn" class="w-full brand-bg hover:bg-yellow-500 text-slate-950 font-black py-3.5 rounded-xl shadow-md transition text-base">
+                            <i class="fa-solid fa-floppy-disk ml-1"></i> حفظ وتطبيق التغييرات على الموقع فوراً
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <div class="lg:col-span-5 space-y-6">
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
+                    <h2 class="text-xl font-black text-slate-900 mb-2 flex items-center gap-2">
+                        <i class="fa-solid fa-users-gear text-yellow-500"></i> إدارة المحررين
+                    </h2>
+                    <p class="text-xs text-slate-500 mb-5 pb-3 border-b">أضف محررين جدد باسم مستخدم وكلمة مرور فقط بدون أي قيود أو إيميلات.</p>
+
+                    <form id="add-editor-form" class="space-y-3 bg-slate-50 p-4 rounded-xl border border-slate-200 mb-6">
+                        <h3 class="text-sm font-bold text-slate-800">إضافة محرر جديد</h3>
+                        <div>
+                            <input type="text" id="new-ed-user" required placeholder="اسم المستخدم (مثال: AHMEDA)" class="w-full px-3.5 py-2 rounded-lg border border-slate-300 text-sm text-left font-bold bg-white" dir="ltr">
+                        </div>
+                        <div>
+                            <input type="text" id="new-ed-pass" required placeholder="كلمة المرور (مثال: 123456)" class="w-full px-3.5 py-2 rounded-lg border border-slate-300 text-sm text-left bg-white" dir="ltr">
+                        </div>
+                        <button type="submit" class="w-full dark-bg hover:bg-slate-800 brand-text font-bold py-2.5 rounded-lg text-sm transition">
+                            <i class="fa-solid fa-user-plus ml-1"></i> حفظ وإضافة المحرر
+                        </button>
+                    </form>
+
+                    <h3 class="text-sm font-bold text-slate-700 mb-3">قائمة المحررين المعتمدين حالياً:</h3>
+                    <div id="editors-list" class="space-y-2.5">
+                        <div class="p-3 bg-yellow-50 border border-yellow-200 rounded-xl flex justify-between items-center text-xs">
+                            <div>
+                                <span class="font-black text-slate-900">AHMEDA</span>
+                                <span class="text-slate-500 mr-2">(حساب افتراضي | باسورد: 123456)</span>
+                            </div>
+                            <span class="bg-yellow-400 text-slate-950 font-bold px-2 py-0.5 rounded">أساسي</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script type="module">
+        
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+  import { getDatabase, ref, set, get, push, onValue, remove, update } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyAccVmtHXNNm1eq-rVn-sRraWa7JqLDTQc",
+    authDomain: "sheko-3817f.firebaseapp.com",
+    databaseURL: "https://sheko-3817f-default-rtdb.firebaseio.com",
+    projectId: "sheko-3817f",
+    storageBucket: "sheko-3817f.firebasestorage.app",
+    messagingSenderId: "267877115512",
+    appId: "1:267877115512:web:1efcccf07d090a438e6f8d"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getDatabase(app);
+
+
+        document.getElementById('admin-login-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const u = document.getElementById('admin-user').value.trim();
+            const p = document.getElementById('admin-pass').value.trim();
+            if ((u === 'AHMEDD' || u === 'ahmedsheko123') && (p === 'Aa123456789' || p === '123456')) {
+                sessionStorage.setItem('master_admin', 'true');
+                initAdmin();
+            } else {
+                document.getElementById('admin-error').classList.remove('hidden');
+            }
+        });
+
+        function initAdmin() {
+            document.getElementById('admin-login-screen').classList.add('hidden');
+            document.getElementById('admin-dashboard').classList.remove('hidden');
+            loadCurrentSettings();
+            loadEditorsList();
+        }
+
+        window.adminLogout = () => {
+            sessionStorage.removeItem('master_admin');
+            location.reload();
+        };
+
+        if (sessionStorage.getItem('master_admin') === 'true') initAdmin();
+
+        window.handleLogoUpload = (input) => {
+            const file = input.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const img = new Image();
+                img.onload = () => {
+                    const canvas = document.createElement('canvas');
+                    canvas.width = 200;
+                    canvas.height = 200;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, 200, 200);
+                    const dataUrl = canvas.toDataURL('image/png');
+                    document.getElementById('set-logo-data').value = dataUrl;
+                    const prev = document.getElementById('set-logo-preview');
+                    prev.src = dataUrl;
+                    prev.classList.remove('hidden');
+                };
+                img.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        };
+
+        function loadCurrentSettings() {
+            onValue(ref(db, 'settings'), (snap) => {
+                const s = snap.val();
+                if (!s) return;
+                if (s.siteName) document.getElementById('set-site-name').value = s.siteName;
+                if (s.tagline) document.getElementById('set-tagline').value = s.tagline;
+                if (s.breakingNews) document.getElementById('set-breaking').value = s.breakingNews;
+                if (s.fontFamily) document.getElementById('set-font').value = s.fontFamily;
+                if (s.fontSize) document.getElementById('set-font-size').value = s.fontSize;
+                if (s.primaryColor) document.getElementById('set-primary-color').value = s.primaryColor;
+                if (s.darkColor) document.getElementById('set-dark-color').value = s.darkColor;
+                if (s.logoUrl) {
+                    document.getElementById('set-logo-data').value = s.logoUrl;
+                    const prev = document.getElementById('set-logo-preview');
+                    prev.src = s.logoUrl;
+                    prev.classList.remove('hidden');
+                }
             });
         }
 
-        function deleteArticle(id) {
-            if(confirm("هل أنت متأكد من حذف هذا الخبر نهائياً؟")) {
-                db.collection("articles").doc(id).delete().then(() => {
-                    alert("تم حذف الخبر بنجاح!");
-                    loadAdminArticles();
-                }).catch((error) => {
-                    alert("حدث خطأ أثناء الحذف.");
-                });
+        document.getElementById('settings-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('save-settings-btn');
+            btn.disabled = true;
+            btn.textContent = 'جاري الحفظ...';
+
+            const settingsData = {
+                siteName: document.getElementById('set-site-name').value || 'الصحيفة الإخبارية',
+                tagline: document.getElementById('set-tagline').value || 'الحقيقة كما هي.. تغطية لحظة بلحظة',
+                breakingNews: document.getElementById('set-breaking').value || 'أهلاً بكم في منصتنا الإخبارية الشاملة',
+                fontFamily: document.getElementById('set-font').value,
+                fontSize: document.getElementById('set-font-size').value,
+                primaryColor: document.getElementById('set-primary-color').value,
+                darkColor: document.getElementById('set-dark-color').value,
+                logoUrl: document.getElementById('set-logo-data').value
+            };
+
+            try {
+                await set(ref(db, 'settings'), settingsData);
+                alert('✅ تم حفظ الإعدادات وتحديث هوية الموقع بالكامل لجميع الزوار!');
+            } catch (err) {
+                alert('خطأ في الحفظ: ' + err.message);
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fa-solid fa-floppy-disk ml-1"></i> حفظ وتطبيق التغييرات على الموقع فوراً';
             }
+        });
+
+        document.getElementById('add-editor-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const username = document.getElementById('new-ed-user').value.trim();
+            const password = document.getElementById('new-ed-pass').value.trim();
+            if (!username || !password) return;
+
+            try {
+                await push(ref(db, 'editors'), { username, password });
+                alert(`✅ تم إضافة المحرر (${username}) بنجاح! يمكنه الدخول الآن.`);
+                e.target.reset();
+            } catch (err) {
+                alert('خطأ أثناء الإضافة: ' + err.message);
+            }
+        });
+
+        function loadEditorsList() {
+            onValue(ref(db, 'editors'), (snap) => {
+                const data = snap.val();
+                const list = document.getElementById('editors-list');
+                let html = `
+                    <div class="p-3 bg-yellow-50 border border-yellow-200 rounded-xl flex justify-between items-center text-xs">
+                        <div>
+                            <span class="font-black text-slate-900">AHMEDA</span>
+                            <span class="text-slate-500 mr-2">(افتراضي | باسورد: 123456)</span>
+                        </div>
+                        <span class="bg-yellow-400 text-slate-950 font-bold px-2 py-0.5 rounded">أساسي</span>
+                    </div>`;
+                if (data) {
+                    Object.keys(data).forEach(k => {
+                        html += `
+                            <div class="p-3 bg-slate-50 border border-slate-200 rounded-xl flex justify-between items-center text-xs">
+                                <div>
+                                    <span class="font-black text-slate-900">${data[k].username}</span>
+                                    <span class="text-slate-500 mr-2">(الباسورد: ${data[k].password})</span>
+                                </div>
+                                <button onclick="deleteEditor('${k}')" class="text-red-500 hover:bg-red-100 px-2 py-1 rounded font-bold">حذف</button>
+                            </div>`;
+                    });
+                }
+                list.innerHTML = html;
+            });
         }
+
+        window.deleteEditor = async (id) => {
+            if (confirm('حذف هذا المحرر؟')) {
+                await remove(ref(db, 'editors/' + id));
+            }
+        };
     </script>
 </body>
 </html>

@@ -1,120 +1,394 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
+    <title>استوديو المحررين - نشر وتحديث الأخبار</title>
+    
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>لوحة تحكم المحرر</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
-    <style>body { font-family: 'Cairo', sans-serif; background-color: #f8fafc; }</style>
-    
-    <!-- Firebase SDKs -->
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
-    <script>
-        const firebaseConfig = {
-            apiKey: "AIzaSyAccVmtHXNNm1eq-rVn-sRRaWa7JqLDTQc",
-            authDomain: "sheko-3817f.firebaseapp.com",
-            projectId: "sheko-3817f",
-            storageBucket: "sheko-3817f.firebasestorage.app",
-            messagingSenderId: "267877115512",
-            appId: "1:267877115512:web:1efcccf07d090a438e6f8d",
-            measurementId: "G-38KXKP8M5C"
-        };
-        if (!firebase.apps.length) {
-            firebase.initializeApp(firebaseConfig);
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Almarai:wght@400;700;800&family=Amiri:wght@400;700&family=Cairo:wght@400;600;700;900&family=Changa:wght@500;700;800&family=Tajawal:wght@400;500;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        :root {
+            --primary-yellow: #facc15;
+            --primary-dark: #0f172a;
+            --accent-gold: #eab308;
+            --site-font: 'Cairo', sans-serif;
+            --base-size: 16px;
         }
-        const db = firebase.firestore();
-    </script>
+        body {
+            font-family: var(--site-font);
+            font-size: var(--base-size);
+            background-color: #f8fafc;
+            color: #0f172a;
+        }
+        .brand-bg { background-color: var(--primary-yellow); }
+        .brand-text { color: var(--primary-yellow); }
+        .brand-border { border-color: var(--primary-yellow); }
+        .dark-bg { background-color: var(--primary-dark); }
+        @keyframes marquee {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+        .animate-ticker {
+            display: inline-block;
+            white-space: nowrap;
+            animation: marquee 28s linear infinite;
+        }
+        .animate-ticker:hover { animation-play-state: paused; }
+        .article-body h3 { font-size: 1.35rem; font-weight: 800; margin: 1.25rem 0 0.5rem; color: #0f172a; border-right: 4px solid var(--primary-yellow); padding-right: 0.75rem; }
+        .article-body blockquote { background: #fefce8; border-right: 4px solid var(--primary-yellow); padding: 1rem 1.25rem; margin: 1.25rem 0; font-weight: 700; border-radius: 0.5rem; color: #1e293b; }
+        .article-body ul { list-style-type: disc; margin-right: 1.5rem; margin-bottom: 1rem; }
+    </style>
+
 </head>
-<body class="bg-slate-50 min-h-screen text-slate-800">
-    <!-- شاشة تسجيل الدخول -->
-    <div id="login-screen" class="flex items-center justify-center min-h-screen p-4">
-        <div class="bg-white p-8 rounded-2xl shadow-xl w-full max-w-md border border-slate-100">
-            <h2 class="text-xl font-bold text-center mb-6 text-slate-800">تسجيل دخول المحرر</h2>
-            <form onsubmit="handleLogin(event)" class="space-y-4">
-                <div>
-                    <label class="block text-sm font-semibold mb-1">اسم المستخدم</label>
-                    <input type="text" id="username" required class="w-full px-3 py-2 rounded-xl border border-slate-200" placeholder="AHMEDA">
+<body class="min-h-screen bg-slate-100">
+
+    <!-- Login Screen -->
+    <div id="login-screen" class="min-h-screen flex items-center justify-center p-4 dark-bg">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden border-t-8 brand-border">
+            <div class="p-8">
+                <div class="w-16 h-16 brand-bg rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-md border-2 border-slate-900">
+                    <i class="fa-solid fa-pen-nib text-2xl text-slate-900"></i>
                 </div>
-                <div>
-                    <label class="block text-sm font-semibold mb-1">كلمة المرور</label>
-                    <input type="password" id="password" required class="w-full px-3 py-2 rounded-xl border border-slate-200">
+                <h2 class="text-2xl font-black text-center text-slate-900">بوابة المحررين</h2>
+                <p class="text-center text-slate-500 text-sm mt-1 mb-6">سجل الدخول لكتابة الأخبار وتوزيع الصور</p>
+                
+                <form id="editor-login-form" class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-bold text-slate-700 mb-1">اسم المستخدم (المحرر)</label>
+                        <input type="text" id="login-user" required placeholder="مثال: AHMEDA" class="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:border-yellow-500 focus:outline-none text-left font-bold" dir="ltr">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-bold text-slate-700 mb-1">كلمة المرور</label>
+                        <input type="password" id="login-pass" required placeholder="••••••••" class="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:border-yellow-500 focus:outline-none text-left" dir="ltr">
+                    </div>
+                    <div id="login-error" class="hidden bg-red-50 text-red-600 text-xs font-bold p-3 rounded-xl border border-red-200 text-center">
+                        اسم المستخدم أو كلمة المرور غير صحيحة!
+                    </div>
+                    <button type="submit" class="w-full brand-bg hover:bg-yellow-500 text-slate-950 font-black py-3 rounded-xl shadow-md transition">
+                        دخول استوديو التحرير <i class="fa-solid fa-arrow-left mr-1"></i>
+                    </button>
+                </form>
+                <div class="mt-6 text-center">
+                    <a href="index.html" class="text-xs text-slate-500 hover:text-slate-800 font-semibold">&rarr; العودة للصفحة الرئيسية للزوار</a>
                 </div>
-                <div id="login-error" class="text-red-500 text-sm hidden">بيانات الدخول غير صحيحة</div>
-                <button type="submit" class="w-full bg-slate-900 text-white font-bold py-2.5 rounded-xl">دخول المحرر</button>
-            </form>
-        </div>
-    </div>
-    
-    <!-- لوحة النشر -->
-    <div id="dashboard-screen" class="hidden min-h-screen p-6 max-w-3xl mx-auto">
-        <div class="flex justify-between items-center mb-6 bg-white p-4 rounded-xl border shadow-sm">
-            <h2 class="font-bold text-lg text-indigo-700">لوحة المحرر: AHMEDA</h2>
-            <div class="space-x-2 space-x-reverse">
-                <a href="index.html" target="_blank" class="text-xs bg-slate-100 px-3 py-2 rounded-lg font-semibold">فتح الموقع ↗</a>
-                <button onclick="logout()" class="text-red-600 text-sm font-semibold">تسجيل الخروج</button>
             </div>
         </div>
-        <div class="bg-white p-6 rounded-xl border shadow-sm space-y-4">
-            <h3 class="font-bold text-slate-800">إضافة خبر أو مقال جديد</h3>
-            <form onsubmit="publishNews(event)" class="space-y-4">
-                <input type="text" id="news-title" placeholder="عنوان الخبر الجديد..." required class="w-full px-3 py-2 border rounded-xl">
-                <textarea id="news-desc" placeholder="محتوى الخبر..." rows="5" required class="w-full px-3 py-2 border rounded-xl"></textarea>
-                <button type="submit" id="publish-btn" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2.5 rounded-xl transition">نشر الخبر فوراً</button>
-            </form>
-        </div>
     </div>
 
-    <script>
-        function handleLogin(e) {
+    <!-- Editor Studio Dashboard -->
+    <div id="studio-screen" class="hidden">
+        <header class="dark-bg text-white border-b-4 brand-border sticky top-0 z-30 shadow-md">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 py-3.5 flex flex-wrap justify-between items-center gap-3">
+                <div class="flex items-center gap-3">
+                    <span class="brand-bg text-slate-950 font-black px-3 py-1 rounded-lg text-sm">استوديو التحرير</span>
+                    <span class="text-sm text-slate-300">مرحباً، <strong id="current-editor-name" class="text-yellow-400">المحرر</strong></span>
+                </div>
+                <div class="flex items-center gap-3">
+                    <a href="index.html" target="_blank" class="bg-slate-800 hover:bg-slate-700 text-white text-xs font-bold px-3.5 py-2 rounded-lg transition">
+                        <i class="fa-solid fa-eye text-yellow-400 ml-1"></i> معاينة الموقع
+                    </a>
+                    <button onclick="logout()" class="bg-red-600/20 hover:bg-red-600 text-red-300 hover:text-white text-xs font-bold px-3.5 py-2 rounded-lg transition">
+                        تسجيل خروج
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <main class="max-w-7xl mx-auto px-4 sm:px-6 py-8 grid grid-cols-1 lg:grid-cols-12 gap-8">
+            <div class="lg:col-span-8 space-y-6">
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
+                    <h2 class="text-xl font-black text-slate-900 mb-6 flex items-center gap-2 border-b pb-3">
+                        <i class="fa-solid fa-newspaper text-yellow-500"></i> إنشاء ونشر خبر جديد متعدد الصور
+                    </h2>
+
+                    <form id="publish-form" class="space-y-6">
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div class="md:col-span-2">
+                                <label class="block text-sm font-bold text-slate-700 mb-1">عنوان الخبر الرئيسي *</label>
+                                <input type="text" id="art-title" required placeholder="اكتب عنواناً صحفياً جذاباً هنا..." class="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:border-yellow-500 focus:outline-none font-bold">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-bold text-slate-700 mb-1">القسم *</label>
+                                <select id="art-category" class="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:border-yellow-500 focus:outline-none font-bold bg-white">
+                                    <option value="أخبار عاجلة">أخبار عاجلة</option>
+                                    <option value="رياضة">رياضة</option>
+                                    <option value="اقتصاد">اقتصاد</option>
+                                    <option value="فن وثقافة">فن وثقافة</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-bold text-slate-700 mb-1">مقدمة / ملخص الخبر (يظهر في البطاقة الرئيسية)</label>
+                            <textarea id="art-summary" rows="2" placeholder="ملخص سريع لأهم تفاصيل الخبر..." class="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:border-yellow-500 focus:outline-none"></textarea>
+                        </div>
+
+                        <!-- Image Slot 1 -->
+                        <div class="bg-yellow-50/60 p-4 rounded-xl border-2 border-dashed border-yellow-400">
+                            <div class="flex justify-between items-center mb-2">
+                                <label class="text-sm font-black text-slate-900"><i class="fa-solid fa-image text-yellow-600 ml-1"></i> 1. الصورة الرئيسية للخبر (الغلاف)</label>
+                                <span class="text-xs text-slate-500">تظهر في أعلى الخبر والواجهة</span>
+                            </div>
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                <input type="file" accept="image/*" onchange="handleImageUpload(this, 'cover-preview', 'cover-data')" class="text-xs bg-white p-2 rounded-lg border border-slate-300">
+                                <input type="text" id="cover-caption" placeholder="تعليق توضيحي أسفل الصورة الرئيسية (اختياري)" class="text-xs px-3 py-2 rounded-lg border border-slate-300 bg-white">
+                            </div>
+                            <input type="hidden" id="cover-data">
+                            <img id="cover-preview" class="hidden mt-3 h-36 rounded-lg object-cover border shadow-sm">
+                        </div>
+
+                        <!-- Body Part 1 -->
+                        <div>
+                            <div class="flex flex-wrap justify-between items-center gap-2 mb-2">
+                                <label class="text-sm font-bold text-slate-700">الجزء الأول من تفاصيل الخبر *</label>
+                                <div class="flex items-center gap-1 bg-slate-100 p-1 rounded-lg border border-slate-200">
+                                    <button type="button" onclick="insertTag('art-body-1', '<b>', '</b>')" title="خط عريض" class="px-2.5 py-1 hover:bg-white rounded text-xs font-black">B</button>
+                                    <button type="button" onclick="insertTag('art-body-1', '<h3>', '</h3>')" title="عنوان فرعي" class="px-2.5 py-1 hover:bg-white rounded text-xs font-bold text-yellow-700">عنوان فرعي</button>
+                                    <button type="button" onclick="insertTag('art-body-1', '<blockquote>', '</blockquote>')" title="اقتباس مميز" class="px-2.5 py-1 hover:bg-white rounded text-xs font-bold"><i class="fa-solid fa-quote-right"></i> اقتباس</button>
+                                    <button type="button" onclick="insertTag('art-body-1', '<ul><li>', '</li></ul>')" title="قائمة نقاط" class="px-2.5 py-1 hover:bg-white rounded text-xs font-bold"><i class="fa-solid fa-list-ul"></i></button>
+                                </div>
+                            </div>
+                            <textarea id="art-body-1" rows="5" required placeholder="اكتب تفاصيل الفقرة الأولى هنا..." class="w-full px-4 py-3 rounded-xl border border-slate-300 focus:border-yellow-500 focus:outline-none leading-relaxed"></textarea>
+                        </div>
+
+                        <!-- Image Slot 2 -->
+                        <div class="bg-slate-50 p-4 rounded-xl border border-slate-300">
+                            <div class="flex justify-between items-center mb-2">
+                                <label class="text-sm font-black text-slate-800"><i class="fa-solid fa-images text-indigo-600 ml-1"></i> 2. صورة إضافية في منتصف المقال (اختياري)</label>
+                                <span class="text-xs text-slate-500">تظهر بين الفقرات</span>
+                            </div>
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                <input type="file" accept="image/*" onchange="handleImageUpload(this, 'mid-preview', 'mid-data')" class="text-xs bg-white p-2 rounded-lg border border-slate-300">
+                                <input type="text" id="mid-caption" placeholder="تعليق أسفل صورة المنتصف..." class="text-xs px-3 py-2 rounded-lg border border-slate-300 bg-white">
+                            </div>
+                            <input type="hidden" id="mid-data">
+                            <img id="mid-preview" class="hidden mt-3 h-32 rounded-lg object-cover border shadow-sm">
+                        </div>
+
+                        <!-- Body Part 2 -->
+                        <div>
+                            <div class="flex justify-between items-center mb-2">
+                                <label class="text-sm font-bold text-slate-700">تكملة الخبر (الجزء الثاني - اختياري)</label>
+                                <div class="flex items-center gap-1 bg-slate-100 p-1 rounded-lg border border-slate-200">
+                                    <button type="button" onclick="insertTag('art-body-2', '<b>', '</b>')" class="px-2.5 py-1 hover:bg-white rounded text-xs font-black">B</button>
+                                    <button type="button" onclick="insertTag('art-body-2', '<h3>', '</h3>')" class="px-2.5 py-1 hover:bg-white rounded text-xs font-bold text-yellow-700">عنوان فرعي</button>
+                                    <button type="button" onclick="insertTag('art-body-2', '<blockquote>', '</blockquote>')" class="px-2.5 py-1 hover:bg-white rounded text-xs font-bold">اقتباس</button>
+                                </div>
+                            </div>
+                            <textarea id="art-body-2" rows="4" placeholder="أكمل باقي تفاصيل الخبر أو التصريحات هنا..." class="w-full px-4 py-3 rounded-xl border border-slate-300 focus:border-yellow-500 focus:outline-none leading-relaxed"></textarea>
+                        </div>
+
+                        <!-- Image Slot 3 -->
+                        <div class="bg-slate-50 p-4 rounded-xl border border-slate-300">
+                            <div class="flex justify-between items-center mb-2">
+                                <label class="text-sm font-black text-slate-800"><i class="fa-solid fa-camera text-emerald-600 ml-1"></i> 3. صورة ختامية في نهاية الخبر (اختياري)</label>
+                                <span class="text-xs text-slate-500">تظهر في نهاية التقرير</span>
+                            </div>
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                <input type="file" accept="image/*" onchange="handleImageUpload(this, 'end-preview', 'end-data')" class="text-xs bg-white p-2 rounded-lg border border-slate-300">
+                                <input type="text" id="end-caption" placeholder="تعليق أسفل الصورة الختامية..." class="text-xs px-3 py-2 rounded-lg border border-slate-300 bg-white">
+                            </div>
+                            <input type="hidden" id="end-data">
+                            <img id="end-preview" class="hidden mt-3 h-32 rounded-lg object-cover border shadow-sm">
+                        </div>
+
+                        <button type="submit" id="publish-btn" class="w-full brand-bg hover:bg-yellow-500 text-slate-950 font-black py-3.5 rounded-xl shadow-lg text-lg transition flex items-center justify-center gap-2">
+                            <i class="fa-solid fa-paper-plane"></i> نشر الخبر الآن على الموقع
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <div class="lg:col-span-4">
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-5 sticky top-24">
+                    <h3 class="font-black text-slate-900 border-b pb-3 mb-4 flex items-center justify-between">
+                        <span><i class="fa-solid fa-list-check text-yellow-500 ml-1"></i> الأخبار المنشورة</span>
+                        <span id="sidebar-count" class="text-xs bg-slate-100 px-2.5 py-1 rounded-full">0</span>
+                    </h3>
+                    <div id="published-list" class="space-y-3 max-h-[600px] overflow-y-auto pr-1">
+                        <p class="text-xs text-slate-400 text-center py-6">جاري التحميل...</p>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script type="module">
+        
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+  import { getDatabase, ref, set, get, push, onValue, remove, update } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyAccVmtHXNNm1eq-rVn-sRraWa7JqLDTQc",
+    authDomain: "sheko-3817f.firebaseapp.com",
+    databaseURL: "https://sheko-3817f-default-rtdb.firebaseio.com",
+    projectId: "sheko-3817f",
+    storageBucket: "sheko-3817f.firebasestorage.app",
+    messagingSenderId: "267877115512",
+    appId: "1:267877115512:web:1efcccf07d090a438e6f8d"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getDatabase(app);
+
+
+        window.handleImageUpload = (input, previewId, hiddenId) => {
+            const file = input.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const img = new Image();
+                img.onload = () => {
+                    const canvas = document.createElement('canvas');
+                    const maxW = 900;
+                    const scale = maxW / img.width;
+                    canvas.width = img.width > maxW ? maxW : img.width;
+                    canvas.height = img.width > maxW ? img.height * scale : img.height;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                    const compressed = canvas.toDataURL('image/jpeg', 0.78);
+                    document.getElementById(hiddenId).value = compressed;
+                    const prev = document.getElementById(previewId);
+                    prev.src = compressed;
+                    prev.classList.remove('hidden');
+                };
+                img.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        };
+
+        window.insertTag = (textareaId, openTag, closeTag) => {
+            const ta = document.getElementById(textareaId);
+            const start = ta.selectionStart;
+            const end = ta.selectionEnd;
+            const selected = ta.value.substring(start, end) || 'نص مميز';
+            ta.value = ta.value.substring(0, start) + openTag + selected + closeTag + ta.value.substring(end);
+            ta.focus();
+        };
+
+        document.getElementById('editor-login-form').addEventListener('submit', async (e) => {
             e.preventDefault();
-            const u = document.getElementById("username").value;
-            const p = document.getElementById("password").value;
-            if(u === "AHMEDA" || u === "ahmed") {
-                sessionStorage.setItem("editor_logged", "true");
-                showDash();
-            } else {
-                document.getElementById("login-error").classList.remove("hidden");
+            const u = document.getElementById('login-user').value.trim();
+            const p = document.getElementById('login-pass').value.trim();
+            const errBox = document.getElementById('login-error');
+
+            try {
+                const snap = await get(ref(db, 'editors'));
+                const editors = snap.val() || {};
+                let valid = false;
+
+                Object.values(editors).forEach(ed => {
+                    if (ed.username === u && ed.password === p) valid = true;
+                });
+
+                if (u === 'AHMEDA' && p === '123456') valid = true;
+
+                if (valid) {
+                    sessionStorage.setItem('logged_editor', u);
+                    initStudio(u);
+                } else {
+                    errBox.classList.remove('hidden');
+                }
+            } catch (err) {
+                if (u === 'AHMEDA' && p === '123456') {
+                    sessionStorage.setItem('logged_editor', u);
+                    initStudio(u);
+                } else {
+                    errBox.textContent = 'خطأ في الاتصال بقاعدة البيانات أو البيانات غير صحيحة';
+                    errBox.classList.remove('hidden');
+                }
             }
+        });
+
+        function initStudio(username) {
+            document.getElementById('login-screen').classList.add('hidden');
+            document.getElementById('studio-screen').classList.remove('hidden');
+            document.getElementById('current-editor-name').textContent = username;
+            loadPublishedArticles();
         }
-        function showDash() {
-            document.getElementById("login-screen").style.display = "none";
-            document.getElementById("dashboard-screen").style.display = "block";
-        }
-        function logout() {
-            sessionStorage.removeItem("editor_logged");
+
+        window.logout = () => {
+            sessionStorage.removeItem('logged_editor');
             location.reload();
-        }
-        if(sessionStorage.getItem("editor_logged") === "true") {
-            showDash();
-        }
+        };
 
-        function publishNews(e) {
+        const savedEd = sessionStorage.getItem('logged_editor');
+        if (savedEd) initStudio(savedEd);
+
+        document.getElementById('publish-form').addEventListener('submit', async (e) => {
             e.preventDefault();
-            const title = document.getElementById("news-title").value;
-            const content = document.getElementById("news-desc").value;
-            const btn = document.getElementById("publish-btn");
-
+            const btn = document.getElementById('publish-btn');
             btn.disabled = true;
-            btn.textContent = "جاري النشر...";
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> جاري النشر...';
 
-            db.collection("articles").add({
-                title: title,
-                content: content,
-                createdAt: firebase.firestore.FieldValue.serverTimestamp()
-            }).then(() => {
-                alert("تم نشر الخبر بنجاح وعرضه على الموقع!");
+            const formatParagraphs = (txt) => txt.split('\n').filter(l => l.trim() !== '').map(l => l.startsWith('<') ? l : `<p>${l}</p>`).join('');
+
+            const articleData = {
+                title: document.getElementById('art-title').value,
+                category: document.getElementById('art-category').value,
+                summary: document.getElementById('art-summary').value,
+                coverImage: document.getElementById('cover-data').value,
+                coverCaption: document.getElementById('cover-caption').value,
+                bodyPart1: formatParagraphs(document.getElementById('art-body-1').value),
+                midImage: document.getElementById('mid-data').value,
+                midCaption: document.getElementById('mid-caption').value,
+                bodyPart2: formatParagraphs(document.getElementById('art-body-2').value),
+                endImage: document.getElementById('end-data').value,
+                endCaption: document.getElementById('end-caption').value,
+                author: sessionStorage.getItem('logged_editor') || 'هيئة التحرير',
+                date: new Date().toLocaleDateString('ar-EG', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }),
+                timestamp: Date.now()
+            };
+
+            try {
+                await push(ref(db, 'articles'), articleData);
+                alert('✅ تم نشر الخبر بنجاح وظهوره للزوار فوراً!');
                 e.target.reset();
+                ['cover-preview', 'mid-preview', 'end-preview'].forEach(id => document.getElementById(id).classList.add('hidden'));
+                ['cover-data', 'mid-data', 'end-data'].forEach(id => document.getElementById(id).value = '');
+            } catch (err) {
+                alert('حدث خطأ أثناء النشر: ' + err.message);
+            } finally {
                 btn.disabled = false;
-                btn.textContent = "نشر الخبر فوراً";
-            }).catch((error) => {
-                alert("حدث خطأ أثناء النشر: " + error.message);
-                btn.disabled = false;
-                btn.textContent = "نشر الخبر فوراً";
+                btn.innerHTML = '<i class="fa-solid fa-paper-plane"></i> نشر الخبر الآن على الموقع';
+            }
+        });
+
+        function loadPublishedArticles() {
+            onValue(ref(db, 'articles'), (snap) => {
+                const data = snap.val();
+                const list = document.getElementById('published-list');
+                if (!data) {
+                    document.getElementById('sidebar-count').textContent = '0';
+                    list.innerHTML = '<p class="text-xs text-slate-400 text-center py-6">لا توجد أخبار منشورة بعد.</p>';
+                    return;
+                }
+                const keys = Object.keys(data).reverse();
+                document.getElementById('sidebar-count').textContent = keys.length;
+                list.innerHTML = keys.map(k => `
+                    <div class="p-3 rounded-xl border border-slate-200 bg-slate-50 flex justify-between items-start gap-2">
+                        <div>
+                            <span class="text-[10px] font-bold brand-bg px-2 py-0.5 rounded text-slate-900">${data[k].category}</span>
+                            <h4 class="text-xs font-bold text-slate-800 mt-1 line-clamp-2">${data[k].title}</h4>
+                            <span class="text-[10px] text-slate-400">${data[k].date}</span>
+                        </div>
+                        <button onclick="deleteArticle('${k}')" title="حذف الخبر" class="text-red-500 hover:bg-red-100 p-1.5 rounded-lg transition shrink-0">
+                            <i class="fa-solid fa-trash-can text-xs"></i>
+                        </button>
+                    </div>
+                `).join('');
             });
         }
+
+        window.deleteArticle = async (id) => {
+            if (confirm('هل أنت متأكد من حذف هذا الخبر نهائياً؟')) {
+                await remove(ref(db, 'articles/' + id));
+            }
+        };
     </script>
 </body>
 </html>
