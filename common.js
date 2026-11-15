@@ -1,4 +1,4 @@
-// ===== Shared Code Across All Pages =====
+// ===== Shared Code Across All Pages (Fixed & Secured) =====
 const CONFIGURED = !!(typeof firebaseConfig !== 'undefined' && firebaseConfig.apiKey);
 let db, auth;
 if (CONFIGURED) {
@@ -47,7 +47,7 @@ const THEMES = {
 const DEFAULT_COLORS = Object.fromEntries(COLORS.map(c => [c[0], c[2]]));
 const DEFAULTS = {
   name: 'The Spotlight', slogan: 'Arts & Football News', logo: '',
-  ticker: 'Welcome to The Spotlight!   ◆   Latest Arts & Football Breaking News',
+  ticker: 'Welcome!   ◆   Latest Breaking News',
   cats: ['Arts', 'Football'],
   colors: DEFAULT_COLORS,
 };
@@ -115,15 +115,11 @@ const AUTH_ERRORS = {
 };
 const authErr = e => AUTH_ERRORS[e.code] || ('Error: ' + e.message);
 
-/*
- * ADMIN GATE
- * Signs the administrator in with USERNAME + PASSWORD through Firebase Auth.
- * The username is converted to the real admin email (see config.js), so no
- * password ever appears in source code.
- */
+// --- ADMIN GATE ---
 function adminGate(box, title, onReady) {
   box.hidden = false;
-  box.innerHTML = '<div class="login"><p>Loading...</p></div>';
+  box.style.display = "block";
+  box.innerHTML = '<div class="login"><p>Checking session...</p></div>';
 
   auth.onAuthStateChanged(async u => {
     if (!u) return showLogin();
@@ -132,11 +128,13 @@ function adminGate(box, title, onReady) {
       return showLogin('This account is not the administrator.');
     }
     box.hidden = true;
+    box.style.display = "none";
     onReady(u);
   });
 
   function showLogin(notice) {
     box.hidden = false;
+    box.style.display = "block";
     box.innerHTML = `<div class="login"><h2>${title}</h2>
       <label>Username<input id="lUser" type="text" dir="ltr" autocomplete="username" placeholder="username"></label>
       <label>Password<input id="lPass" type="password" dir="ltr" autocomplete="current-password" placeholder="password"></label>
@@ -145,7 +143,6 @@ function adminGate(box, title, onReady) {
       <div id="lHelp"></div></div>`;
 
     const msg = t => box.querySelector('#lMsg').textContent = t;
-    const help = h => box.querySelector('#lHelp').innerHTML = h;
     const go = () => {
       const user = box.querySelector('#lUser').value.trim();
       const pass = box.querySelector('#lPass').value;
@@ -153,19 +150,14 @@ function adminGate(box, title, onReady) {
       if (!pass) return msg('Please enter your password');
 
       const email = (typeof usernameToEmail === 'function') ? usernameToEmail(user) : '';
-      if (!email) return msg('Invalid username. Enter your username or full admin email.');
+      if (!email) return msg('Invalid username.');
 
       const b = box.querySelector('#lIn');
-      b.disabled = true; b.textContent = 'Signing in...'; msg(''); help('');
+      b.disabled = true; b.textContent = 'Signing in...'; msg('');
+      
       auth.signInWithEmailAndPassword(email, pass)
         .catch(e => {
           msg(authErr(e));
-          if (e.code === 'auth/user-not-found' || e.code === 'auth/invalid-credential' || e.code === 'auth/invalid-login-credentials') {
-            help(`<p style="font-size:13px;color:#9a9a9a;line-height:1.8;margin-top:4px">
-              If this is the very first sign-in, the admin account may not exist yet.<br>
-              Create it once in <b>Firebase Console → Authentication → Users → Add user</b><br>
-              email: <b dir="ltr">${esc(ADMIN)}</b> · password: your chosen password.</p>`);
-          }
           b.disabled = false; b.textContent = 'Sign In';
         });
     };
@@ -175,28 +167,29 @@ function adminGate(box, title, onReady) {
   }
 }
 
-/*
- * EDITOR GATE
- * Signs an editor in with USERNAME + PASSWORD. The username is mapped to the
- * internal Firebase Auth address before the call, so editors never see emails.
- */
+// --- EDITOR GATE ---
 function authGate(box, title, onUser) {
-  box.innerHTML = '<div class="login"><p>Loading...</p></div>';
+  box.hidden = false;
+  box.style.display = "block";
+  box.innerHTML = '<div class="login"><p>Checking session...</p></div>';
+
   auth.onAuthStateChanged(async u => {
     if (!u) return showLogin();
-    await u.getIdToken(true);
+    await u.getIdToken(true).catch(() => {});
     box.hidden = true;
+    box.style.display = "none";
     onUser(u);
   });
+
   function showLogin(notice) {
     box.hidden = false;
+    box.style.display = "block";
     box.innerHTML = `<div class="login"><h2>${title}</h2>
       <label>Username<input id="lUser" type="text" dir="ltr" autocomplete="username" placeholder="username" autocapitalize="none"></label>
       <label>Password<input id="lPass" type="password" dir="ltr" autocomplete="current-password" placeholder="password"></label>
       <button class="btn" id="lIn">Sign In</button>
-      <p class="msg" id="lMsg">${esc(notice || '')}</p>
-      <p style="font-size:13px;color:#888;line-height:1.8;margin-top:6px">
-        Ask the admin for your username and password if you don't have them.</p></div>`;
+      <p class="msg" id="lMsg">${esc(notice || '')}</p></div>`;
+    
     const msg = t => box.querySelector('#lMsg').textContent = t;
     const go = () => {
       const user = box.querySelector('#lUser').value.trim();
@@ -209,6 +202,7 @@ function authGate(box, title, onUser) {
 
       const b = box.querySelector('#lIn');
       b.disabled = true; b.textContent = 'Signing in...'; msg('');
+      
       auth.signInWithEmailAndPassword(email, pass)
         .catch(e => { msg(authErr(e)); b.disabled = false; b.textContent = 'Sign In'; });
     };
@@ -220,6 +214,7 @@ function authGate(box, title, onUser) {
 
 function denied(box, text) {
   box.hidden = false;
+  box.style.display = "block";
   box.innerHTML = `<div class="login"><h2>Access Denied</h2><p>${esc(text)}</p><button class="btn" onclick="auth.signOut()">Sign Out</button></div>`;
 }
 
@@ -229,13 +224,47 @@ function articleManager(root, opts) {
   <div class="box"><h3 id="fTitle">✍️ New Article</h3>
     <div class="thumb" id="aThumb"></div>
     <div class="row-btns" id="imgBtns" hidden><button class="mini" id="aImgDel">Remove Image</button></div>
+    
     <label>Title<textarea id="aTitle" rows="2" placeholder="Article Title"></textarea></label>
     <label>Category<select id="aCat">${opts.cats.map(c => `<option>${esc(c)}</option>`).join('')}</select></label>
     <label>Short Summary<textarea id="aSum" rows="2"></textarea></label>
-    <label>Full Content<textarea id="aBody" rows="9"></textarea></label>
-    <div class="row-btns"><button class="btn" id="aSave">🚀 Publish Article</button><button class="btn ghost" id="aCancel" hidden>Cancel Edit</button></div>
+    
+    <!-- Formatting Toolbar for Content -->
+    <label>Full Content & Formatting</label>
+    <div class="editor-toolbar">
+      <button type="button" class="mini" onclick="formatText('bold')"><b>B</b></button>
+      <button type="button" class="mini" onclick="formatText('italic')"><i>I</i></button>
+      <button type="button" class="mini" onclick="formatText('underline')"><u>U</u></button>
+      <select id="editorFontSize" onchange="changeFontSize(this.value)" class="mini-select">
+        <option value="">حجم الخط</option>
+        <option value="14px">صغير (14px)</option>
+        <option value="16px">عادي (16px)</option>
+        <option value="18px">متوسط (18px)</option>
+        <option value="22px">كبير (22px)</option>
+        <option value="28px">عنوان فرعي (28px)</option>
+      </select>
+      <input type="color" id="editorFontColor" onchange="changeFontColor(this.value)" title="لون النص" style="width:36px;height:28px;border:none;cursor:pointer;background:none;">
+      <select id="editorLineHeight" onchange="changeLineHeight(this.value)" class="mini-select">
+        <option value="">مسافات السطور</option>
+        <option value="1.4">ضيق (1.4)</option>
+        <option value="1.7">عادي (1.7)</option>
+        <option value="2.0">واسع (2.0)</option>
+        <option value="2.5">متباعد جداً (2.5)</option>
+      </select>
+      <button type="button" class="mini" onclick="formatText('justifyLeft')">يسار</button>
+      <button type="button" class="mini" onclick="formatText('justifyCenter')">توسيط</button>
+      <button type="button" class="mini" onclick="formatText('justifyRight')">يمين</button>
+    </div>
+    
+    <div id="aBody" contenteditable="true" class="rich-textarea" placeholder="اكتب تفاصيل الخبر هنا..."></div>
+    
+    <div class="row-btns" style="margin-top:16px;">
+      <button class="btn" id="aSave">🚀 Publish Article</button>
+      <button class="btn ghost" id="aCancel" hidden>Cancel Edit</button>
+    </div>
   </div>
   <div class="box"><h3>${opts.admin ? '📰 All Articles' : '📰 My Articles'}</h3><div id="aList">Loading...</div></div>`;
+  
   const q = s => root.querySelector(s);
   const file = document.createElement('input'); file.type = 'file'; file.accept = 'image/*';
   q('#aThumb').onclick = () => file.click();
@@ -252,12 +281,21 @@ function articleManager(root, opts) {
   }
   function reset() {
     editing = null; img = '';
-    ['#aTitle', '#aSum', '#aBody'].forEach(s => q(s).value = '');
+    q('#aTitle').value = '';
+    q('#aSum').value = '';
+    q('#aBody').innerHTML = '';
     q('#fTitle').textContent = '✍️ New Article'; q('#aSave').textContent = '🚀 Publish Article'; q('#aCancel').hidden = true; showThumb();
   }
   q('#aCancel').onclick = reset;
+  
   q('#aSave').onclick = async () => {
-    const data = { title: q('#aTitle').value.trim(), cat: q('#aCat').value, sum: q('#aSum').value.trim(), body: q('#aBody').value.trim(), img };
+    const data = { 
+      title: q('#aTitle').value.trim(), 
+      cat: q('#aCat').value, 
+      sum: q('#aSum').value.trim(), 
+      body: q('#aBody').innerHTML.trim(), 
+      img 
+    };
     if (!data.title) return toast('Please enter an article title');
     const b = q('#aSave'); b.disabled = true; b.textContent = 'Saving...';
     try {
@@ -267,6 +305,7 @@ function articleManager(root, opts) {
     } catch (e) { toast('Could not save: ' + e.message); }
     b.disabled = false; if (!editing) b.textContent = '🚀 Publish Article';
   };
+  
   async function load() {
     let ref = db.collection('articles');
     ref = opts.admin ? ref.orderBy('createdAt', 'desc').limit(200) : ref.where('authorEmail', '==', opts.email);
@@ -277,6 +316,7 @@ function articleManager(root, opts) {
       draw();
     } catch (e) { q('#aList').textContent = 'Could not load articles: ' + e.message; }
   }
+  
   function draw() {
     q('#aList').innerHTML = items.length ? items.map(a => `
       <div class="aitem">
@@ -289,12 +329,15 @@ function articleManager(root, opts) {
             <button class="mini danger" data-act="del" data-id="${a.id}">🗑 Delete</button>
           </div></div></div>`).join('') : '<p class="muted">No articles found yet</p>';
   }
+  
   q('#aList').onclick = async e => {
     const b = e.target.closest('button'); if (!b) return;
     const a = items.find(x => x.id === b.dataset.id); if (!a) return;
     if (b.dataset.act === 'edit') {
       editing = a.id; img = a.img || '';
-      q('#aTitle').value = a.title || ''; q('#aSum').value = a.sum || ''; q('#aBody').value = a.body || '';
+      q('#aTitle').value = a.title || ''; 
+      q('#aSum').value = a.sum || ''; 
+      q('#aBody').innerHTML = a.body || '';
       if (![...q('#aCat').options].some(o => o.value === a.cat)) q('#aCat').add(new Option(a.cat));
       q('#aCat').value = a.cat;
       q('#fTitle').textContent = '✏️ Edit Article'; q('#aSave').textContent = '💾 Save Changes'; q('#aCancel').hidden = false;
@@ -309,4 +352,27 @@ function articleManager(root, opts) {
     }
   };
   showThumb(); load();
+}
+
+function formatText(command) {
+  document.execCommand(command, false, null);
+}
+function changeFontSize(size) {
+  if(!size) return;
+  const selection = window.getSelection();
+  if (!selection.rangeCount) return;
+  const span = document.createElement("span");
+  span.style.fontSize = size;
+  span.appendChild(selection.getRangeAt(0).extractContents());
+  selection.getRangeAt(0).insertNode(span);
+}
+function changeFontColor(color) {
+  if(!color) return;
+  document.execCommand('styleWithCSS', false, true);
+  document.execCommand('foreColor', false, color);
+}
+function changeLineHeight(height) {
+  if(!height) return;
+  const bodyBox = document.getElementById('aBody');
+  if(bodyBox) bodyBox.style.lineHeight = height;
 }

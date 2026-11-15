@@ -42,12 +42,10 @@ if (!CONFIGURED) {
     }
 
     const S = await loadSettings();
-    // Show a friendly username instead of the internal address.
     document.getElementById('who').textContent =
       (typeof emailToUsername === 'function') ? emailToUsername(email) : email;
     document.getElementById('app').hidden = false;
 
-    // authorEmail must stay the real Auth email so the security rules match.
     articleManager(document.getElementById('news'), {
       admin: isAdmin,
       email,
