@@ -100,66 +100,118 @@ function notConfiguredMsg() {
 }
 
 const AUTH_ERRORS = {
-  'auth/invalid-credential': 'Invalid email or password',
+  'auth/invalid-email': 'Invalid email format',
+  'auth/user-disabled': 'This account has been disabled',
+  'auth/user-not-found': 'Account not found',
   'auth/wrong-password': 'Wrong password',
-  'auth/user-not-found': 'Account not found. Ask the admin to create your account.',
+  'auth/invalid-credential': 'Wrong username or password',
+  'auth/invalid-login-credentials': 'Wrong username or password',
   'auth/email-already-in-use': 'Email is already in use',
   'auth/weak-password': 'Password should be at least 6 characters',
-  'auth/invalid-email': 'Invalid email format',
   'auth/too-many-requests': 'Too many attempts. Please try again later',
   'auth/unauthorized-domain': 'Please add your domain to Firebase authorized domains',
+  'auth/network-request-failed': 'Network error. Check your connection',
+  'auth/operation-not-allowed': 'Email/Password sign-in is not enabled in Firebase Console',
 };
 const authErr = e => AUTH_ERRORS[e.code] || ('Error: ' + e.message);
 
+/*
+ * ADMIN GATE
+ * Signs the administrator in with USERNAME + PASSWORD through Firebase Auth.
+ * The username is converted to the real admin email (see config.js), so no
+ * password ever appears in source code.
+ */
+function adminGate(box, title, onReady) {
+  box.hidden = false;
+  box.innerHTML = '<div class="login"><p>Loading...</p></div>';
+
+  auth.onAuthStateChanged(async u => {
+    if (!u) return showLogin();
+    if (u.email.toLowerCase() !== ADMIN) {
+      await auth.signOut().catch(() => {});
+      return showLogin('This account is not the administrator.');
+    }
+    box.hidden = true;
+    onReady(u);
+  });
+
+  function showLogin(notice) {
+    box.hidden = false;
+    box.innerHTML = `<div class="login"><h2>${title}</h2>
+      <label>Username<input id="lUser" type="text" dir="ltr" autocomplete="username" placeholder="username"></label>
+      <label>Password<input id="lPass" type="password" dir="ltr" autocomplete="current-password" placeholder="password"></label>
+      <button class="btn" id="lIn">Sign In</button>
+      <p class="msg" id="lMsg">${esc(notice || '')}</p>
+      <div id="lHelp"></div></div>`;
+
+    const msg = t => box.querySelector('#lMsg').textContent = t;
+    const help = h => box.querySelector('#lHelp').innerHTML = h;
+    const go = () => {
+      const user = box.querySelector('#lUser').value.trim();
+      const pass = box.querySelector('#lPass').value;
+      if (!user) return msg('Please enter your username');
+      if (!pass) return msg('Please enter your password');
+
+      const email = (typeof usernameToEmail === 'function') ? usernameToEmail(user) : '';
+      if (!email) return msg('Invalid username. Enter your username or full admin email.');
+
+      const b = box.querySelector('#lIn');
+      b.disabled = true; b.textContent = 'Signing in...'; msg(''); help('');
+      auth.signInWithEmailAndPassword(email, pass)
+        .catch(e => {
+          msg(authErr(e));
+          if (e.code === 'auth/user-not-found' || e.code === 'auth/invalid-credential' || e.code === 'auth/invalid-login-credentials') {
+            help(`<p style="font-size:13px;color:#9a9a9a;line-height:1.8;margin-top:4px">
+              If this is the very first sign-in, the admin account may not exist yet.<br>
+              Create it once in <b>Firebase Console → Authentication → Users → Add user</b><br>
+              email: <b dir="ltr">${esc(ADMIN)}</b> · password: your chosen password.</p>`);
+          }
+          b.disabled = false; b.textContent = 'Sign In';
+        });
+    };
+    box.querySelector('#lIn').onclick = go;
+    box.querySelector('#lPass').onkeydown = e => { if (e.key === 'Enter') go(); };
+    box.querySelector('#lUser').onkeydown = e => { if (e.key === 'Enter') box.querySelector('#lPass').focus(); };
+  }
+}
+
+/* EDITOR GATE (email + password, must exist in the roles collection) */
 function authGate(box, title, onUser) {
   box.innerHTML = '<div class="login"><p>Loading...</p></div>';
   auth.onAuthStateChanged(async u => {
     if (!u) return showLogin();
-    if (u.email.toLowerCase() === ADMIN && !u.emailVerified) return showVerify(u);
     await u.getIdToken(true);
     box.hidden = true;
     onUser(u);
   });
   function showLogin() {
     box.hidden = false;
-    const isAdminPage = title.toLowerCase().includes('admin');
     box.innerHTML = `<div class="login"><h2>${title}</h2>
-      <label>Email<input id="lEmail" type="email" dir="ltr"></label>
-      <label>Password<input id="lPass" type="password" dir="ltr"></label>
+      <label>Email<input id="lEmail" type="email" dir="ltr" autocomplete="username"></label>
+      <label>Password<input id="lPass" type="password" dir="ltr" autocomplete="current-password"></label>
       <button class="btn" id="lIn">Sign In</button>
-      ${isAdminPage ? '<button class="btn ghost" id="lUp">First time? Create account</button>' : ''}
       <button class="link" id="lForgot">Forgot Password?</button>
       <p class="msg" id="lMsg"></p></div>`;
     const em = () => box.querySelector('#lEmail').value.trim().toLowerCase();
     const pw = () => box.querySelector('#lPass').value;
     const msg = t => box.querySelector('#lMsg').textContent = t;
-    box.querySelector('#lIn').onclick = () => auth.signInWithEmailAndPassword(em(), pw()).catch(e => msg(authErr(e)));
-    if (isAdminPage && box.querySelector('#lUp')) {
-      box.querySelector('#lUp').onclick = async () => {
-        try { const r = await auth.createUserWithEmailAndPassword(em(), pw()); await r.user.sendEmailVerification(); }
-        catch (e) { msg(authErr(e)); }
-      };
-    }
+    const go = () => {
+      const b = box.querySelector('#lIn'); b.disabled = true; b.textContent = 'Signing in...';
+      auth.signInWithEmailAndPassword(em(), pw())
+        .catch(e => { msg(authErr(e)); b.disabled = false; b.textContent = 'Sign In'; });
+    };
+    box.querySelector('#lIn').onclick = go;
+    box.querySelector('#lPass').onkeydown = e => { if (e.key === 'Enter') go(); };
     box.querySelector('#lForgot').onclick = () => {
       if (!em()) return msg('Please enter your email first');
       auth.sendPasswordResetEmail(em()).then(() => msg('Password reset email sent!')).catch(e => msg(authErr(e)));
     };
   }
-  function showVerify(u) {
-    box.hidden = false;
-    box.innerHTML = `<div class="login"><h2>Verify Your Email</h2>
-      <p>We sent a verification link to <b dir="ltr">${esc(u.email)}</b>. Open it, click the link, and then click "I have verified".</p>
-      <button class="btn" id="vDone">I have verified</button>
-      <button class="btn ghost" id="vAgain">Resend Email</button>
-      <button class="link" id="vOut">Sign Out</button><p class="msg" id="vMsg"></p></div>`;
-    box.querySelector('#vDone').onclick = async () => { await u.reload(); if (auth.currentUser.emailVerified) location.reload(); else box.querySelector('#vMsg').textContent = 'Email not verified yet'; };
-    box.querySelector('#vAgain').onclick = () => u.sendEmailVerification().then(() => box.querySelector('#vMsg').textContent = 'Verification email resent').catch(e => box.querySelector('#vMsg').textContent = authErr(e));
-    box.querySelector('#vOut').onclick = () => auth.signOut();
-  }
 }
+
 function denied(box, text) {
   box.hidden = false;
-  box.innerHTML = `<div class="login"><h2>Access Denied</h2><p>${text}</p><button class="btn" onclick="auth.signOut()">Sign Out</button></div>`;
+  box.innerHTML = `<div class="login"><h2>Access Denied</h2><p>${esc(text)}</p><button class="btn" onclick="auth.signOut()">Sign Out</button></div>`;
 }
 
 function articleManager(root, opts) {

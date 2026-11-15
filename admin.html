@@ -28,6 +28,8 @@
 .save-bar .btn{flex:1}
 .ed{display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid #333;gap:10px;flex-wrap:wrap}
 .hint{background:#2a2615;color:#f5c518;padding:12px;border-radius:10px;font-size:14px;margin-bottom:14px}
+.hint.good{background:#152a15;color:#7dd67d}
+.hint.bad{background:#2a1515;color:#ff9999}
 .ed-form{display:grid;grid-template-columns:1fr 1fr auto;gap:8px;align-items:center}
 @media(max-width:1000px){.design{grid-template-columns:1fr}.preview{position:static;height:600px}.ed-form{grid-template-columns:1fr}}
 </style>
@@ -36,13 +38,17 @@
 <div id="gate"></div>
 <div id="app" hidden>
   <div class="bar"><b>👑 Admin Dashboard</b>
-    <div style="display:flex;gap:6px;flex-wrap:wrap"><a href="index.html" target="_blank">Open Site ↗</a><button onclick="localStorage.removeItem('isAdminLoggedIn'); location.reload();">Sign Out</button></div></div>
+    <div style="display:flex;gap:6px;flex-wrap:wrap">
+      <a href="index.html" target="_blank">Open Site ↗</a>
+      <button id="signOutBtn">Sign Out</button>
+    </div></div>
   <div class="wrap wide">
     <div class="tabs" id="tabs">
       <button data-t="news" class="on">📰 Articles</button>
       <button data-t="design">🎨 Design & Colors</button>
       <button data-t="content">📋 Categories & Ticker</button>
       <button data-t="editors">👥 Editors</button>
+      <button data-t="account">🔐 My Account</button>
     </div>
 
     <div data-p="news"><div style="max-width:900px" id="news"></div></div>
@@ -77,59 +83,64 @@
 
     <div data-p="editors" hidden><div style="max-width:900px">
       <div class="box"><h3>Create Editor Account</h3>
-        <div class="hint">Set an email and password for your editor, then send them the link and credentials:<br><b dir="ltr" id="edLink"></b> <button class="mini" onclick="navigator.clipboard.writeText(document.getElementById('edLink').textContent).then(()=>toast('Link Copied'))">Copy Link</button></div>
+        <div class="hint">Set an email and password for your editor, then send them the editor page link together with the credentials:<br><b dir="ltr" id="edLink"></b> <button class="mini" onclick="navigator.clipboard.writeText(document.getElementById('edLink').textContent).then(()=>toast('Link Copied'))">Copy Link</button></div>
         <div class="ed-form">
           <input type="email" id="edEmail" dir="ltr" placeholder="editor@gmail.com" style="margin:0">
           <input type="text" id="edPass" dir="ltr" placeholder="Password (min 6 chars)" style="margin:0">
           <button class="btn" id="addEdBtn" onclick="addEditor()">Create Account</button>
         </div>
+        <p class="muted" style="font-size:13px;margin-top:10px">The password is not stored anywhere in the database. If the editor forgets it, use “Send reset link”.</p>
       </div>
       <div class="box"><h3>Current Editors</h3><div id="edList">Loading...</div></div>
+    </div></div>
+
+    <div data-p="account" hidden><div style="max-width:640px">
+      <div class="box"><h3>Signed in as</h3>
+        <p dir="ltr" style="font-size:16px;font-weight:700" id="accEmail"></p>
+      </div>
+      <div class="box"><h3>Change Admin Password</h3>
+        <div class="hint">You must enter your current password to confirm the change.</div>
+        <label>Current Password<input type="password" id="cpCur" dir="ltr" autocomplete="current-password"></label>
+        <label>New Password<input type="password" id="cpNew" dir="ltr" autocomplete="new-password" placeholder="min 6 characters"></label>
+        <label>Confirm New Password<input type="password" id="cpNew2" dir="ltr" autocomplete="new-password"></label>
+        <button class="btn" id="cpBtn">🔐 Update Password</button>
+        <p class="msg" id="cpMsg"></p>
+      </div>
+      <div class="box"><h3>Change Admin Username</h3>
+        <div class="hint">The username is the shortcut for signing in. Changing it here updates <b>config.js</b> only on this device — to make it permanent, edit <b>ADMIN_USERNAME</b> inside <b>config.js</b>.</div>
+        <label>Current Username<input type="text" id="cuVal" dir="ltr" readonly style="opacity:.6"></label>
+      </div>
     </div></div>
   </div>
 </div>
 
 <script>
 const $ = id => document.getElementById(id);
-let S, SAVED;
+let S, SAVED, CURRENT_USER = null;
 
-function checkAdminLogin() {
-  const gate = $('gate');
-  if (localStorage.getItem('isAdminLoggedIn') === 'true') {
-    gate.hidden = true;
-    initAdmin();
-    return;
-  }
-  gate.hidden = false;
-  gate.innerHTML = `<div class="login"><h2>👑 Admin Sign In</h2>
-    <label>Username<input id="adminUser" type="text" dir="ltr" placeholder="Username"></label>
-    <label>Password<input id="adminPass" type="password" dir="ltr" placeholder="Password"></label>
-    <button class="btn" id="adminLoginBtn">Sign In</button>
-    <p class="msg" id="adminMsg"></p></div>`;
-
-  gate.querySelector('#adminLoginBtn').onclick = () => {
-    const u = gate.querySelector('#adminUser').value.trim();
-    const p = gate.querySelector('#adminPass').value.trim();
-    if (u === 'ahmedsheko123' && p === 'Aa123456789') {
-      localStorage.setItem('isAdminLoggedIn', 'true');
-      gate.hidden = true;
-      initAdmin();
-    } else {
-      gate.querySelector('#adminMsg').textContent = 'Invalid username or password';
-    }
-  };
+if (!CONFIGURED) {
+  document.getElementById('gate').innerHTML = notConfiguredMsg();
+} else {
+  adminGate($('gate'), '👑 Admin Sign In', u => initAdmin(u));
 }
 
-async function initAdmin() {
+$('signOutBtn').onclick = async () => {
+  await auth.signOut().catch(() => {});
+  location.reload();
+};
+
+async function initAdmin(u) {
+  CURRENT_USER = u;
   $('app').hidden = false;
-  S = await loadSettings(); SAVED = JSON.parse(JSON.stringify(S));
+  $('accEmail').textContent = u.email;
+  if (typeof ADMIN_USERNAME !== 'undefined') $('cuVal').value = ADMIN_USERNAME;
+
+  S = await loadSettings();
+  SAVED = JSON.parse(JSON.stringify(S));
   fillForms();
-  articleManager($('news'), { admin: true, email: 'ahmedsheko123@admin.com', cats: S.cats });
+  articleManager($('news'), { admin: true, email: u.email.toLowerCase(), cats: S.cats });
   loadEditors();
 }
-
-if (!CONFIGURED) document.body.innerHTML = notConfiguredMsg();
-else checkAdminLogin();
 
 $('tabs').onclick = e => {
   const b = e.target.closest('button'); if (!b) return;
@@ -146,7 +157,7 @@ function fillForms() {
   $('edLink').textContent = location.href.replace(/admin\.html.*$/, 'editor.html');
 }
 function drawColors() {
-  $('clist').innerHTML = COLORS.map(([k, label]) => `<div class="crow"><span>${label}</span><input type="color" data-k="${k}" value="${S.colors[k]}"></div>`).join('');
+  $('clist').innerHTML = COLORS.map(([k, label]) => `<div class="crow"><span>${label}</span><input type="color" data-k="${k}" value="${S.colors[k] || '#000000'}"></div>`).join('');
 }
 function drawLogo() { $('logoPrev').innerHTML = S.logo ? `<img src="${S.logo}">` : 'Click<br>to add<br>logo'; }
 $('clist').oninput = e => { if (e.target.dataset.k) { S.colors[e.target.dataset.k] = e.target.value; preview(); } };
@@ -178,20 +189,19 @@ async function saveSettings() {
   } catch (e) { toast('Could not save: ' + e.message); }
 }
 
+/* ---------------- Editors ---------------- */
 async function loadEditors() {
   try {
     const s = await db.collection('roles').get();
-    $('edList').innerHTML = s.docs.length ? s.docs.map(d => {
-      const data = d.data();
-      const passInfo = data.tempPass ? ` · Pass: <b style="color:#f5c518">${esc(data.tempPass)}</b>` : '';
-      return `<div class="ed">
-        <div><span dir="ltr">${esc(d.id)}</span><small class="muted" style="display:block">${passInfo}</small></div>
+    $('edList').innerHTML = s.docs.length ? s.docs.map(d => `
+      <div class="ed">
+        <div><span dir="ltr">${esc(d.id)}</span>
+          <small class="muted" style="display:block">Role: ${esc(d.data().role || 'editor')}</small></div>
         <div style="display:flex;gap:6px">
-          ${data.tempPass ? `<button class="mini" onclick="navigator.clipboard.writeText('Link: ' + document.getElementById('edLink').textContent + '\nEmail: ${esc(d.id)}\nPassword: ${esc(data.tempPass)}').then(()=>toast('Credentials Copied!'))">📋 Copy Info</button>` : ''}
+          <button class="mini" data-reset="${esc(d.id)}">✉️ Send reset link</button>
           <button class="mini danger" data-e="${esc(d.id)}">Remove</button>
         </div>
-      </div>`;
-    }).join('') : '<p class="muted">No editors added yet</p>';
+      </div>`).join('') : '<p class="muted">No editors added yet</p>';
   } catch (e) { $('edList').textContent = 'Error: ' + e.message; }
 }
 
@@ -200,10 +210,10 @@ async function addEditor() {
   const pw = $('edPass').value.trim();
   if (!/^\S+@\S+\.\S+$/.test(em)) return toast('Please enter a valid email');
   if (pw.length < 6) return toast('Password must be at least 6 characters');
-  
+
   const btn = $('addEdBtn');
   btn.disabled = true; btn.textContent = 'Creating...';
-  
+
   let secApp;
   try {
     secApp = firebase.initializeApp(firebaseConfig, 'sec_' + Date.now());
@@ -211,17 +221,17 @@ async function addEditor() {
     await secApp.auth().signOut();
     await secApp.delete();
   } catch (e) {
-    if (secApp) await secApp.delete().catch(()=>{});
+    if (secApp) await secApp.delete().catch(() => {});
     if (e.code !== 'auth/email-already-in-use') {
       btn.disabled = false; btn.textContent = 'Create Account';
       return toast(authErr(e));
     }
   }
-  
+
   try {
+    // NOTE: the password is intentionally NOT stored in Firestore.
     await db.collection('roles').doc(em).set({
       role: 'editor',
-      tempPass: pw,
       added: firebase.firestore.FieldValue.serverTimestamp()
     });
     $('edEmail').value = '';
@@ -235,9 +245,44 @@ async function addEditor() {
 }
 
 $('edList').onclick = async e => {
+  const reset = e.target.dataset.reset;
+  if (reset) {
+    try {
+      await auth.sendPasswordResetEmail(reset);
+      toast('Reset link sent to ' + reset);
+    } catch (err) { toast(authErr(err)); }
+    return;
+  }
   const em = e.target.dataset.e; if (!em) return;
   if (!confirm('Remove ' + em + ' from editors?')) return;
-  await db.collection('roles').doc(em).delete(); loadEditors();
+  try { await db.collection('roles').doc(em).delete(); loadEditors(); } catch (err) { toast(err.message); }
+};
+
+/* ---------------- Account ---------------- */
+$('cpBtn').onclick = async () => {
+  const cur = $('cpCur').value;
+  const np = $('cpNew').value;
+  const np2 = $('cpNew2').value;
+  const msg = $('cpMsg');
+  msg.style.color = '#ff9999';
+
+  if (!cur) return msg.textContent = 'Enter your current password';
+  if (np.length < 6) return msg.textContent = 'New password must be at least 6 characters';
+  if (np !== np2) return msg.textContent = 'New passwords do not match';
+
+  const btn = $('cpBtn');
+  btn.disabled = true; btn.textContent = 'Updating...';
+  try {
+    const cred = firebase.auth.EmailAuthProvider.credential(CURRENT_USER.email, cur);
+    await CURRENT_USER.reauthenticateWithCredential(cred);
+    await CURRENT_USER.updatePassword(np);
+    msg.style.color = '#7dd67d';
+    msg.textContent = 'Password updated successfully ✔';
+    $('cpCur').value = $('cpNew').value = $('cpNew2').value = '';
+  } catch (e) {
+    msg.textContent = authErr(e);
+  }
+  btn.disabled = false; btn.textContent = '🔐 Update Password';
 };
 </script>
 </body>

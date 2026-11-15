@@ -1,22 +1,86 @@
 rules_version = '2';
+
+// =====================================================
+//  جريدتي — Firestore Security Rules (محكمة)
+// =====================================================
+//  الصق هذا الملف بالكامل في:
+//  Firebase Console > Firestore Database > Rules > Publish
+//
+//  القاعدة العامة:
+//   - القراءة (أخبار الموقع) مفتوحة للجميع
+//   - أي كتابة (إضافة/تعديل/حذف) لازم تكون من مستخدم مسجّل دخول
+//     ومسموح له فقط
+//   - الإعدادات والألوان والمحررين: الأدمن فقط
+// =====================================================
+
 service cloud.firestore {
   match /databases/{database}/documents {
 
+    // ---------- Helper Functions ----------
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    // إيميل المستخدم الحالي (حروف صغيرة)
+    function userEmail() {
+      return signedIn() ? request.auth.token.email.lower() : '';
+    }
+
+    // هل المستخدم الحالي هو الأدمن؟
+    // ⚠️ لازم يطابق ADMIN_EMAIL في config.js
+    function isAdmin() {
+      return signedIn() && userEmail() == 'as6064147@gmail.com';
+    }
+
+    // هل المستخدم الحالي محرر مسجّل في مجموعة roles؟
+    function isEditor() {
+      return signedIn() &&
+        exists(/databases/$(database)/documents/roles/$(userEmail()));
+    }
+
+    // ---------- Site Settings ----------
+    // الجميع يقرأ (الموقع محتاج الألوان والنصوص)
+    // الأدمن فقط يكتب
     match /site/{doc} {
       allow read: if true;
-      allow write: if true;
+      allow create, update, delete: if isAdmin();
     }
 
+    // ---------- Roles (قائمة المحررين) ----------
+    // الأدمن يقرأ كل شيء ويكتب
+    // المحرر يقرأ بياناته فقط
     match /roles/{email} {
-      allow read: if true;
-      allow write: if true;
+      allow read: if isAdmin() || (signedIn() && email == userEmail());
+      allow create, update, delete: if isAdmin();
     }
 
+    // ---------- Articles ----------
+    // الجميع يقرأ
     match /articles/{id} {
       allow read: if true;
-      allow create: if true;
-      allow update: if true;
-      allow delete: if true;
+
+      // إنشاء: محرر أو أدمن، ولازم يوقّع باسمه
+      allow create: if (isAdmin() || isEditor())
+                    && request.resource.data.authorEmail.lower() == userEmail()
+                    && request.resource.data.title is string
+                    && request.resource.data.title.size() > 0;
+
+      // تعديل: الأدمن أي مقال | المحرر مقاله فقط
+      // والمحرر ممنوع يغيّر صاحب المقال أو يثبّته في الصفحة الرئيسية
+      allow update: if isAdmin()
+                    || (isEditor()
+                        && resource.data.authorEmail.lower() == userEmail()
+                        && request.resource.data.authorEmail.lower() == userEmail()
+                        && request.resource.data.pinned == resource.data.pinned);
+
+      // حذف: الأدمن أي مقال | المحرر مقاله فقط
+      allow delete: if isAdmin()
+                    || (isEditor() && resource.data.authorEmail.lower() == userEmail());
+    }
+
+    // ---------- Default: deny ----------
+    match /{document=**} {
+      allow read, write: if false;
     }
   }
 }
