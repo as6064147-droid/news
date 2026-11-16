@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SHEKO NEWS | Editor Studio</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>body { font-family: 'Inter', sans-serif; background-color: #f8fafc; color: #0f172a; }</style>
+</head>
+<body class="min-h-screen flex flex-col p-6">
+    <div class="max-w-2xl mx-auto w-full bg-white p-8 rounded-3xl shadow border">
+        <h1 class="text-2xl font-black mb-6">SHEKO NEWS - Editor Studio</h1>
+        <form id="news-form" class="space-y-4">
+            <div>
+                <label class="block text-xs font-bold uppercase mb-1">Title</label>
+                <input type="text" id="news-title" required class="w-full p-3 border rounded-xl bg-slate-50">
+            </div>
+            <div>
+                <label class="block text-xs font-bold uppercase mb-1">Category</label>
+                <select id="news-cat" class="w-full p-3 border rounded-xl bg-slate-50">
+                    <option value="Entertainment">Entertainment</option>
+                    <option value="Sports">Sports</option>
+                </select>
+            </div>
+            <div>
+                <label class="block text-xs font-bold uppercase mb-1">Content</label>
+                <textarea id="news-body" rows="4" required class="w-full p-3 border rounded-xl bg-slate-50"></textarea>
+            </div>
+            <button type="submit" class="w-full bg-yellow-400 font-black p-4 rounded-xl shadow">Publish Now</button>
+        </form>
+    </div>
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+        import { getDatabase, ref, push } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+        
+        const firebaseConfig = {
+            apiKey: "AIzaSyAccVmtHXNNm1eq-rVn-sRraWa7JqLDTQc",
+            authDomain: "sheko-3817f.firebaseapp.com",
+            databaseURL: "https://sheko-3817f-default-rtdb.firebaseio.com",
+            projectId: "sheko-3817f",
+            storageBucket: "sheko-3817f.firebasestorage.app",
+            messagingSenderId: "267877115512",
+            appId: "1:267877115512:web:1efcccf07d090a438e6f8d"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+
+        document.getElementById('news-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = e.target.querySelector('button');
+            btn.textContent = "Publishing...";
+            try {
+                await push(ref(db, 'articles'), {
+                    title: document.getElementById('news-title').value,
+                    category: document.getElementById('news-cat').value,
+                    bodyPart1: document.getElementById('news-body').value,
+                    date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+                });
+                alert('Published Successfully!');
+                e.target.reset();
+            } catch (err) {
+                alert('Error: ' + err.message);
+            } finally {
+                btn.textContent = "Publish Now";
+            }
+        });
+    </script>
+</body>
+</html>
