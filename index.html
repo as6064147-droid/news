@@ -1,95 +1,140 @@
 <!DOCTYPE html>
 <html lang="en" dir="ltr">
 <head>
+    <title id="page-title">The Spotlight | News</title>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SHEKO NEWS | Entertainment & Sports</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Almarai:wght@400;700;800&family=Amiri:wght@400;700&family=Cairo:wght@400;600;700;900&family=Changa:wght@500;700;800&family=Tajawal:wght@400;500;700;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <style>
-        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; color: #0f172a; }
+        :root {
+            --primary-yellow: #facc15;
+            --primary-dark: #0f172a;
+            --accent-gold: #eab308;
+            --site-font: 'Cairo', sans-serif;
+            --base-size: 16px;
+        }
+        body {
+            font-family: var(--site-font);
+            font-size: var(--base-size);
+            background-color: #f8fafc;
+            color: #0f172a;
+        }
+        .brand-bg { background-color: var(--primary-yellow); }
+        .brand-text { color: var(--primary-yellow); }
+        .brand-border { border-color: var(--primary-yellow); }
+        .dark-bg { background-color: var(--primary-dark); }
+        @keyframes marquee {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+        .animate-ticker {
+            display: inline-block;
+            white-space: nowrap;
+            animation: marquee 28s linear infinite;
+        }
+        .animate-ticker:hover { animation-play-state: paused; }
+        .article-body h3 { font-size: 1.35rem; font-weight: 800; margin: 1.25rem 0 0.5rem; color: #0f172a; border-right: 4px solid var(--primary-yellow); padding-right: 0.75rem; }
+        .article-body blockquote { background: #fefce8; border-right: 4px solid var(--primary-yellow); padding: 1rem 1.25rem; margin: 1.25rem 0; font-weight: 700; border-radius: 0.5rem; color: #1e293b; }
+        .article-body ul { list-style-type: disc; margin-right: 1.5rem; margin-bottom: 1rem; }
     </style>
 </head>
 <body class="min-h-screen flex flex-col">
 
-    <!-- Header -->
-    <header class="bg-slate-950 text-white border-b-4 border-yellow-400 sticky top-0 z-50 shadow-lg">
-        <div class="max-w-6xl mx-auto px-4 py-4 flex flex-wrap justify-between items-center gap-4">
-            <div class="flex items-center gap-3">
-                <div class="w-10 h-10 bg-yellow-400 text-slate-950 rounded-xl flex items-center justify-center font-black text-xl shadow">
-                    S
-                </div>
-                <div>
-                    <h1 class="text-xl font-black tracking-tight uppercase">SHEKO <span class="text-yellow-400">NEWS</span></h1>
-                    <p class="text-[11px] text-slate-400 font-semibold tracking-wider uppercase">Entertainment & Sports Portal</p>
+    <!-- Breaking News Bar -->
+    <div class="dark-bg text-white text-xs sm:text-sm py-2 px-4 border-b-2 brand-border overflow-hidden">
+        <div class="max-w-7xl mx-auto flex items-center gap-3">
+            <span class="brand-bg text-slate-950 font-black px-2.5 py-0.5 rounded text-xs shrink-0 flex items-center gap-1.5">
+                <span class="w-2 h-2 rounded-full bg-red-600 animate-ping"></span> BREAKING
+            </span>
+            <div class="overflow-hidden flex-1 relative h-5">
+                <div id="breaking-text" class="animate-ticker font-semibold text-slate-100">
+                    Welcome to our news platform.. Exclusive coverage around the clock
                 </div>
             </div>
+            <span id="current-date" class="hidden md:inline text-slate-400 text-xs shrink-0"></span>
+        </div>
+    </div>
 
-            <!-- Navigation Tabs -->
-            <nav class="flex items-center gap-2 bg-slate-900 p-1 rounded-xl border border-slate-800">
-                <button onclick="filterNews('all')" id="btn-all" class="filter-btn bg-yellow-400 text-slate-950 px-4 py-1.5 rounded-lg text-xs font-black transition">All News</button>
-                <button onclick="filterNews('art')" id="btn-art" class="filter-btn text-slate-300 hover:text-white px-4 py-1.5 rounded-lg text-xs font-bold transition"><i class="fa-solid fa-film mr-1"></i> Entertainment</button>
-                <button onclick="filterNews('sports')" id="btn-sports" class="filter-btn text-slate-300 hover:text-white px-4 py-1.5 rounded-lg text-xs font-bold transition"><i class="fa-solid fa-futbol mr-1"></i> Sports</button>
-            </nav>
-
-            <!-- Editor Access -->
-            <a href="editor.html" class="bg-slate-800 hover:bg-slate-700 text-yellow-400 border border-slate-700 text-xs font-bold px-3.5 py-2 rounded-xl transition flex items-center gap-2">
-                <i class="fa-solid fa-pen-to-square"></i> Editor Studio
+    <!-- Header -->
+    <header class="bg-white shadow-sm sticky top-0 z-40 border-b border-slate-200">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 py-4 flex flex-wrap justify-between items-center gap-4">
+            <a href="index.html" class="flex items-center gap-3.5 group">
+                <div id="logo-container" class="w-12 h-12 sm:w-14 sm:h-14 rounded-xl brand-bg flex items-center justify-center shadow-md overflow-hidden border-2 border-slate-900 shrink-0">
+                    <i class="fa-solid fa-newspaper text-2xl text-slate-900"></i>
+                </div>
+                <div>
+                    <h1 id="site-name" class="text-xl sm:text-2xl font-black tracking-tight text-slate-900 leading-none">The Spotlight</h1>
+                    <p id="site-tagline" class="text-xs text-slate-500 font-semibold mt-1">The truth as it happens</p>
+                </div>
             </a>
+
+            <nav id="categories-nav" class="flex items-center gap-1.5 sm:gap-2 flex-wrap">
+                <button onclick="filterCategory('All')" class="cat-btn active px-3.5 py-1.5 rounded-lg text-sm font-bold brand-bg text-slate-950 shadow-sm transition">Home</button>
+                <button onclick="filterCategory('أخبار عاجلة')" class="cat-btn px-3.5 py-1.5 rounded-lg text-sm font-bold bg-slate-100 hover:bg-slate-200 text-slate-700 transition">Breaking News</button>
+                <button onclick="filterCategory('Sports')" class="cat-btn px-3.5 py-1.5 rounded-lg text-sm font-bold bg-slate-100 hover:bg-slate-200 text-slate-700 transition">Sports</button>
+                <button onclick="filterCategory('Business')" class="cat-btn px-3.5 py-1.5 rounded-lg text-sm font-bold bg-slate-100 hover:bg-slate-200 text-slate-700 transition">Business</button>
+                <button onclick="filterCategory('Arts & Culture')" class="cat-btn px-3.5 py-1.5 rounded-lg text-sm font-bold bg-slate-100 hover:bg-slate-200 text-slate-700 transition">Arts & Culture</button>
+            </nav>
         </div>
     </header>
 
     <!-- Main Content -->
-    <main class="max-w-6xl mx-auto px-4 py-8 flex-grow w-full">
-        
-        <!-- Top Banner / Featured Section -->
-        <div class="bg-gradient-to-r from-slate-900 to-slate-800 rounded-3xl p-6 md:p-8 text-white mb-8 shadow-xl border border-slate-800 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
-            <div>
-                <span class="bg-yellow-400 text-slate-950 text-[11px] font-black uppercase px-3 py-1 rounded-full tracking-wider">Live Coverage</span>
-                <h2 class="text-2xl md:text-3xl font-black mt-3 leading-tight">Latest Celebrity Buzz & Football Action</h2>
-                <p class="text-slate-300 text-sm mt-2 max-w-xl">Exclusive updates from the world of cinema, music, red carpets, and major football leagues.</p>
-            </div>
-            <div class="flex gap-3">
-                <div class="bg-slate-950/60 border border-slate-700 px-4 py-3 rounded-2xl text-center">
-                    <i class="fa-solid fa-clapperboard text-yellow-400 text-xl mb-1"></i>
-                    <p class="text-xs font-bold">Cinema & TV</p>
-                </div>
-                <div class="bg-slate-950/60 border border-slate-700 px-4 py-3 rounded-2xl text-center">
-                    <i class="fa-solid fa-trophy text-yellow-400 text-xl mb-1"></i>
-                    <p class="text-xs font-bold">Football</p>
-                </div>
-            </div>
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 py-8 flex-1 w-full">
+        <div id="loader" class="text-center py-20">
+            <div class="inline-block w-10 h-10 border-4 border-slate-300 border-t-yellow-400 rounded-full animate-spin mb-3"></div>
+            <p class="text-slate-500 font-bold">Loading the latest news...</p>
         </div>
 
-        <!-- Section Heading -->
-        <div class="flex items-center justify-between mb-6">
-            <h3 id="section-title" class="text-xl font-black text-slate-900 flex items-center gap-2">
-                <span class="w-2 h-6 bg-yellow-400 rounded-full inline-block"></span>
-                Latest Headlines
-            </h3>
-            <span id="articles-count" class="text-xs font-bold text-slate-500 bg-slate-200 px-3 py-1 rounded-full">Loading...</span>
+        <section id="featured-section" class="hidden mb-10"></section>
+
+        <div class="flex items-center justify-between border-b-2 border-slate-200 pb-3 mb-6">
+            <h2 id="section-heading" class="text-xl font-black text-slate-900 flex items-center gap-2.5">
+                <span class="w-3 h-7 brand-bg rounded-sm inline-block"></span>
+                Latest Reports & News
+            </h2>
+            <span id="articles-count" class="text-xs font-bold bg-slate-200 text-slate-700 px-3 py-1 rounded-full">0 articles</span>
         </div>
 
-        <!-- News Grid -->
-        <div id="news-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <!-- Dynamic articles load here -->
-        </div>
-
+        <div id="news-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
     </main>
 
+    <!-- Full Article Modal -->
+    <div id="article-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 hidden overflow-y-auto p-3 sm:p-6">
+        <div class="bg-white max-w-4xl mx-auto rounded-2xl shadow-2xl overflow-hidden my-4 border border-slate-200">
+            <div class="dark-bg text-white px-6 py-4 flex justify-between items-center border-b-4 brand-border">
+                <span id="modal-category" class="brand-bg text-slate-950 text-xs font-black px-3 py-1 rounded-md">News</span>
+                <button onclick="closeArticle()" class="bg-slate-800 hover:bg-red-600 text-white w-9 h-9 rounded-full flex items-center justify-center transition">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+            <div id="modal-content" class="p-6 sm:p-8"></div>
+        </div>
+    </div>
+
     <!-- Footer -->
-    <footer class="bg-slate-950 text-slate-400 py-6 border-t border-slate-800 mt-12">
-        <div class="max-w-6xl mx-auto px-4 flex flex-col sm:flex-row justify-between items-center gap-4 text-xs">
-            <p class="font-bold text-white">SHEKO NEWS &copy; 2026. All Rights Reserved.</p>
-            <div class="flex gap-4">
-                <a href="admin.html" class="hover:text-yellow-400 transition">Admin Panel</a>
-                <a href="editor.html" class="hover:text-yellow-400 transition">Publish News</a>
+    <footer class="dark-bg text-slate-300 border-t-4 brand-border mt-12">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 py-8 flex flex-col sm:flex-row justify-between items-center gap-4">
+            <div class="flex items-center gap-3">
+                <div class="w-9 h-9 rounded-lg brand-bg text-slate-950 flex items-center justify-center font-black">
+                    <i class="fa-solid fa-newspaper"></i>
+                </div>
+                <div>
+                    <span id="footer-site-name" class="font-black text-white text-lg">The Spotlight</span>
+                    <p class="text-xs text-slate-400">All rights reserved &copy; 2026</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-4 text-xs text-slate-400">
+                <a href="editor.html" class="hover:text-yellow-400 transition"><i class="fa-solid fa-pen-nib ml-1"></i> Publisher Studio</a>
+                <span>|</span>
+                <a href="admin.html" class="hover:text-yellow-400 transition"><i class="fa-solid fa-shield-halved ml-1"></i> Owner Dashboard</a>
             </div>
         </div>
     </footer>
 
-    <!-- Firebase Script -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
         import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
@@ -101,4 +146,207 @@
             projectId: "sheko-3817f",
             storageBucket: "sheko-3817f.firebasestorage.app",
             messagingSenderId: "267877115512",
-            appId: "1:26787
+            appId: "1:267877115512:web:1efcccf07d090a438e6f8d"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+
+        document.getElementById('current-date').textContent = new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+
+        let allArticles = [];
+        let currentCategory = 'All';
+        const categoryLabel = (value) => ({ 'أخبار عاجلة': 'Breaking News', 'رياضة': 'Sports', 'اقتصاد': 'Business', 'فن وثقافة': 'Arts & Culture' }[value] || value || 'News');
+
+        // Safety timeout in case Firebase Realtime Database rules block read or network hangs
+        const fallbackTimer = setTimeout(() => {
+            const loader = document.getElementById('loader');
+            if (!loader.classList.contains('hidden')) {
+                loader.classList.add('hidden');
+                renderNews();
+            }
+        }, 4000);
+
+        onValue(ref(db, 'settings'), (snapshot) => {
+            const s = snapshot.val();
+            if (!s) return;
+            if (s.siteName) {
+                document.getElementById('site-name').textContent = s.siteName;
+                document.getElementById('footer-site-name').textContent = s.siteName;
+                document.getElementById('page-title').textContent = s.siteName;
+            }
+            if (s.tagline) document.getElementById('site-tagline').textContent = s.tagline;
+            if (s.breakingNews) document.getElementById('breaking-text').textContent = s.breakingNews;
+            if (s.primaryColor) document.documentElement.style.setProperty('--primary-yellow', s.primaryColor);
+            if (s.darkColor) document.documentElement.style.setProperty('--primary-dark', s.darkColor);
+            if (s.fontFamily) document.documentElement.style.setProperty('--site-font', s.fontFamily);
+            if (s.fontSize) document.documentElement.style.setProperty('--base-size', s.fontSize + 'px');
+            if (s.logoUrl) {
+                document.getElementById('logo-container').innerHTML = `<img src="${s.logoUrl}" alt="Logo" class="w-full h-full object-cover">`;
+            }
+        }, (err) => {
+            console.warn("Settings load skipped:", err.message);
+        });
+
+        onValue(ref(db, 'articles'), (snapshot) => {
+            clearTimeout(fallbackTimer);
+            document.getElementById('loader').classList.add('hidden');
+            const data = snapshot.val();
+            allArticles = [];
+            if (data) {
+                Object.keys(data).forEach(key => {
+                    allArticles.push({ id: key, ...data[key] });
+                });
+                allArticles.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
+            }
+            renderNews();
+        }, (err) => {
+            clearTimeout(fallbackTimer);
+            document.getElementById('loader').classList.add('hidden');
+            document.getElementById('news-grid').innerHTML = `
+                <div class="col-span-full bg-red-50 rounded-2xl p-8 text-center border border-red-200">
+                    <p class="text-red-600 font-bold">Database connection failed: ${err.message}</p>
+                    <p class="text-xs text-slate-600 mt-2">Check that Firebase Realtime Database is enabled and public read rules are configured.</p>
+                </div>`;
+        });
+
+        window.filterCategory = (cat) => {
+            currentCategory = cat;
+            document.querySelectorAll('.cat-btn').forEach(btn => {
+                if (btn.textContent.trim() === (cat === 'All' ? 'Home' : cat)) {
+                    btn.className = 'cat-btn active px-3.5 py-1.5 rounded-lg text-sm font-bold brand-bg text-slate-950 shadow-sm transition';
+                } else {
+                    btn.className = 'cat-btn px-3.5 py-1.5 rounded-lg text-sm font-bold bg-slate-100 hover:bg-slate-200 text-slate-700 transition';
+                }
+            });
+            document.getElementById('section-heading').innerHTML = `<span class="w-3 h-7 brand-bg rounded-sm inline-block"></span> ${cat === 'All' ? 'Latest Reports & News' : 'Category: ' + categoryLabel(cat)}`;
+            renderNews();
+        };
+
+        function renderNews() {
+            const filtered = currentCategory === 'All' ? allArticles : allArticles.filter(a => a.category === currentCategory);
+            document.getElementById('articles-count').textContent = `${filtered.length} articles`;
+
+            const featuredSec = document.getElementById('featured-section');
+            const grid = document.getElementById('news-grid');
+
+            if (filtered.length === 0) {
+                featuredSec.classList.add('hidden');
+                grid.innerHTML = `
+                    <div class="col-span-full bg-white rounded-2xl p-12 text-center border border-slate-200 shadow-sm">
+                        <i class="fa-regular fa-newspaper text-5xl text-slate-300 mb-3"></i>
+                        <h3 class="text-lg font-bold text-slate-700">No articles have been published in this category yet.</h3>
+                        <p class="text-sm text-slate-500 mt-1">Editors can publish new articles from <a href="editor.html" class="text-yellow-600 font-bold underline">Publisher Studio</a>  and they will appear here.</p>
+                    </div>`;
+                return;
+            }
+
+            let gridItems = filtered;
+            if (currentCategory === 'All' && filtered.length > 0) {
+                const hero = filtered[0];
+                gridItems = filtered.slice(1);
+                featuredSec.classList.remove('hidden');
+                featuredSec.innerHTML = `
+                    <div onclick="openArticle('${hero.id}')" class="cursor-pointer group bg-white rounded-2xl overflow-hidden shadow-md hover:shadow-xl transition border border-slate-200 grid grid-cols-1 lg:grid-cols-12">
+                        <div class="lg:col-span-7 relative h-72 sm:h-96 overflow-hidden bg-slate-900">
+                            <img src="${hero.coverImage || 'https://images.unsplash.com/photo-1504711434969-e33886168f5c?auto=format&fit=crop&w=1000&q=80'}" class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
+                            <span class="absolute top-4 right-4 brand-bg text-slate-950 text-xs font-black px-3 py-1 rounded shadow">${categoryLabel(hero.category) || 'Special Coverage'}</span>
+                        </div>
+                        <div class="lg:col-span-5 p-6 sm:p-8 flex flex-col justify-between dark-bg text-white">
+                            <div>
+                                <div class="flex items-center gap-2 text-xs text-yellow-400 font-bold mb-3">
+                                    <i class="fa-solid fa-bolt"></i> Top Story
+                                    <span class="text-slate-500">•</span>
+                                    <span class="text-slate-300">${hero.date || ''}</span>
+                                </div>
+                                <h2 class="text-2xl sm:text-3xl font-black leading-snug group-hover:text-yellow-400 transition mb-4">${hero.title}</h2>
+                                <p class="text-slate-300 text-sm leading-relaxed line-clamp-4">${hero.summary || ''}</p>
+                            </div>
+                            <div class="pt-6 mt-6 border-t border-slate-800 flex items-center justify-between text-xs text-slate-400">
+                                <span><i class="fa-solid fa-user-pen text-yellow-400 ml-1"></i> By: ${hero.author || 'Editorial Team'}</span>
+                                <span class="brand-text font-bold group-hover:underline">Read Full Story <i class="fa-solid fa-arrow-left mr-1"></i></span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            } else {
+                featuredSec.classList.add('hidden');
+            }
+
+            grid.innerHTML = gridItems.map(item => `
+                <article onclick="openArticle('${item.id}')" class="cursor-pointer group bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-lg transition border border-slate-200 flex flex-col">
+                    <div class="relative h-52 overflow-hidden bg-slate-100">
+                        <img src="${item.coverImage || 'https://images.unsplash.com/photo-1585829365295-ab7cd400c167?auto=format&fit=crop&w=800&q=80'}" class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
+                        <span class="absolute top-3 right-3 brand-bg text-slate-950 text-xs font-black px-2.5 py-1 rounded shadow-sm">${categoryLabel(item.category)}</span>
+                        ${(item.midImage || item.endImage) ? '<span class="absolute bottom-3 left-3 bg-slate-950/80 text-white text-[11px] px-2 py-0.5 rounded"><i class="fa-solid fa-images text-yellow-400 ml-1"></i> Photo Report</span>' : ''}
+                    </div>
+                    <div class="p-5 flex-1 flex flex-col justify-between">
+                        <div>
+                            <div class="text-xs text-slate-400 mb-2 flex items-center gap-2">
+                                <span><i class="fa-regular fa-clock ml-1"></i>${item.date || ''}</span>
+                            </div>
+                            <h3 class="text-lg font-extrabold text-slate-900 group-hover:text-yellow-600 transition leading-snug mb-2">${item.title}</h3>
+                            <p class="text-slate-600 text-sm line-clamp-3 leading-relaxed">${item.summary || ''}</p>
+                        </div>
+                        <div class="pt-4 mt-4 border-t border-slate-100 flex justify-between items-center text-xs text-slate-500">
+                            <span><i class="fa-solid fa-feather ml-1 text-slate-400"></i> ${item.author || 'Editor'}</span>
+                            <span class="font-bold text-slate-900 group-hover:text-yellow-600">Read Story &rarr;</span>
+                        </div>
+                    </div>
+                </article>
+            `).join('');
+        }
+
+        window.openArticle = (id) => {
+            const art = allArticles.find(a => a.id === id);
+            if (!art) return;
+            document.getElementById('modal-category').textContent = categoryLabel(art.category);
+            
+            let midImgHtml = '';
+            if (art.midImage) {
+                midImgHtml = `
+                    <figure class="my-6 bg-slate-50 p-3 rounded-xl border border-slate-200">
+                        <img src="${art.midImage}" class="w-full max-h-[450px] object-cover rounded-lg">
+                        ${art.midCaption ? `<figcaption class="text-xs text-slate-600 font-semibold mt-2 text-center"><i class="fa-solid fa-camera text-yellow-500 ml-1"></i> ${art.midCaption}</figcaption>` : ''}
+                    </figure>`;
+            }
+
+            let endImgHtml = '';
+            if (art.endImage) {
+                endImgHtml = `
+                    <figure class="my-6 bg-slate-50 p-3 rounded-xl border border-slate-200">
+                        <img src="${art.endImage}" class="w-full max-h-[450px] object-cover rounded-lg">
+                        ${art.endCaption ? `<figcaption class="text-xs text-slate-600 font-semibold mt-2 text-center"><i class="fa-solid fa-camera text-yellow-500 ml-1"></i> ${art.endCaption}</figcaption>` : ''}
+                    </figure>`;
+            }
+
+            document.getElementById('modal-content').innerHTML = `
+                <h1 class="text-2xl sm:text-4xl font-black text-slate-900 leading-tight mb-4">${art.title}</h1>
+                <div class="flex flex-wrap items-center gap-4 text-xs sm:text-sm text-slate-500 pb-4 mb-6 border-b border-slate-200">
+                    <span class="font-bold text-slate-800"><i class="fa-solid fa-user-pen text-yellow-500 ml-1"></i> ${art.author || 'Editorial Team'}</span>
+                    <span><i class="fa-regular fa-calendar ml-1"></i> ${art.date || ''}</span>
+                </div>
+                ${art.coverImage ? `
+                <figure class="mb-6">
+                    <img src="${art.coverImage}" class="w-full max-h-[480px] object-cover rounded-xl shadow-md">
+                    ${art.coverCaption ? `<figcaption class="text-xs text-slate-500 mt-2 bg-slate-100 px-3 py-1.5 rounded-lg inline-block">${art.coverCaption}</figcaption>` : ''}
+                </figure>` : ''}
+                ${art.summary ? `<p class="text-lg font-bold text-slate-800 bg-yellow-50/70 p-4 rounded-xl border-r-4 brand-border mb-6 leading-relaxed">${art.summary}</p>` : ''}
+                <div class="article-body text-slate-700 leading-loose space-y-4 text-base sm:text-lg">
+                    ${art.bodyPart1 || ''}
+                    ${midImgHtml}
+                    ${art.bodyPart2 || ''}
+                    ${endImgHtml}
+                </div>
+            `;
+            document.getElementById('article-modal').classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+        };
+
+        window.closeArticle = () => {
+            document.getElementById('article-modal').classList.add('hidden');
+            document.body.style.overflow = 'auto';
+        };
+    </script>
+</body>
+</html>

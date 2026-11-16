@@ -1,0 +1,10 @@
+THE SPOTLIGHT — TEMPORARY TEST BUILD
+
+1) Upload all files in this folder to the same hosting directory.
+2) Open index.html for the public website.
+3) Open admin.html for the Owner Dashboard (no password in test mode).
+4) Open editor.html to publish an article. The display name field is optional.
+5) Realtime Database is the active database used by the existing site (settings, articles, editors). Firestore rules do not secure Realtime Database.
+6) Passwords are deliberately not stored. Editor usernames and permissions are stored under /editors.
+7) IMPORTANT: This test build is NOT secure for public deployment. Anyone with access to admin.html/editor.html may use them. Before launch, enable Firebase Authentication and strict Realtime Database Rules, then configure the Owner and Editor credentials.
+8) Back up your Firebase Realtime Database before replacing any live files.

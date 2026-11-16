@@ -1,360 +1,56 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<html lang="en" dir="ltr">
 <head>
-    <title>لوحة تحكم المسؤول الشاملة - Admin</title>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Almarai:wght@400;700;800&family=Amiri:wght@400;700&family=Cairo:wght@400;600;700;900&family=Changa:wght@500;700;800&family=Tajawal:wght@400;500;700;900&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <style>
-        :root {
-            --primary-yellow: #facc15;
-            --primary-dark: #0f172a;
-            --accent-gold: #eab308;
-            --site-font: 'Cairo', sans-serif;
-            --base-size: 16px;
-        }
-        body {
-            font-family: var(--site-font);
-            font-size: var(--base-size);
-            background-color: #f8fafc;
-            color: #0f172a;
-        }
-        .brand-bg { background-color: var(--primary-yellow); }
-        .brand-text { color: var(--primary-yellow); }
-        .brand-border { border-color: var(--primary-yellow); }
-        .dark-bg { background-color: var(--primary-dark); }
-    </style>
-</head>
-<body class="min-h-screen bg-slate-100">
-
-    <!-- Admin Login Screen -->
-    <div id="admin-login-screen" class="min-h-screen flex items-center justify-center p-4 dark-bg">
-        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden border-t-8 brand-border">
-            <div class="p-8">
-                <div class="w-16 h-16 dark-bg brand-text rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-md border-2 brand-border">
-                    <i class="fa-solid fa-shield-halved text-2xl"></i>
-                </div>
-                <h2 class="text-2xl font-black text-center text-slate-900">لوحة الإدارة العليا</h2>
-                <p class="text-center text-slate-500 text-sm mt-1 mb-6">التحكم في الهوية البصرية، الألوان، الخطوط، والمحررين</p>
-                
-                <form id="admin-login-form" class="space-y-4">
-                    <div>
-                        <label class="block text-sm font-bold text-slate-700 mb-1">اسم المستخدم (الأدمن)</label>
-                        <input type="text" id="admin-user" required placeholder="ahmedsheko123" class="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:border-yellow-500 focus:outline-none text-left font-bold" dir="ltr">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-bold text-slate-700 mb-1">كلمة المرور</label>
-                        <input type="password" id="admin-pass" required placeholder="••••••••" class="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:border-yellow-500 focus:outline-none text-left" dir="ltr">
-                    </div>
-                    <div id="admin-error" class="hidden bg-red-50 text-red-600 text-xs font-bold p-3 rounded-xl border border-red-200 text-center">
-                        بيانات دخول المسؤول غير صحيحة!
-                    </div>
-                    <button type="submit" class="w-full dark-bg hover:bg-slate-800 brand-text font-black py-3 rounded-xl shadow-md transition">
-                        دخول لوحة الإدارة <i class="fa-solid fa-lock-open mr-1"></i>
-                    </button>
-                </form>
-                <div class="mt-6 text-center">
-                    <a href="index.html" class="text-xs text-slate-500 hover:text-slate-800 font-semibold">&rarr; العودة للصفحة الرئيسية</a>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Master Admin Dashboard -->
-    <div id="admin-dashboard" class="hidden">
-        <header class="dark-bg text-white border-b-4 brand-border sticky top-0 z-30 shadow-md">
-            <div class="max-w-7xl mx-auto px-4 sm:px-6 py-4 flex flex-wrap justify-between items-center gap-3">
-                <div class="flex items-center gap-3">
-                    <span class="brand-bg text-slate-950 font-black px-3 py-1 rounded-lg text-sm"><i class="fa-solid fa-crown ml-1"></i> الإدارة العليا</span>
-                    <h1 class="font-bold text-base sm:text-lg">إعدادات الجريدة والتحكم الكامل</h1>
-                </div>
-                <div class="flex items-center gap-3">
-                    <a href="editor.html" class="bg-slate-800 hover:bg-slate-700 text-white text-xs font-bold px-3.5 py-2 rounded-lg transition">استوديو المحرر</a>
-                    <a href="index.html" target="_blank" class="brand-bg text-slate-950 text-xs font-black px-3.5 py-2 rounded-lg transition">عرض الموقع</a>
-                    <button onclick="adminLogout()" class="bg-red-600 text-white text-xs font-bold px-3.5 py-2 rounded-lg transition">خروج</button>
-                </div>
-            </div>
-        </header>
-
-        <main class="max-w-7xl mx-auto px-4 sm:px-6 py-8 grid grid-cols-1 lg:grid-cols-12 gap-8">
-            <div class="lg:col-span-7 space-y-6">
-                <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
-                    <h2 class="text-xl font-black text-slate-900 mb-6 flex items-center gap-2 border-b pb-3">
-                        <i class="fa-solid fa-palette text-yellow-500"></i> الهوية البصرية واسم الجريدة واللوجو
-                    </h2>
-
-                    <form id="settings-form" class="space-y-5">
-                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                            <div>
-                                <label class="block text-sm font-bold text-slate-700 mb-1">اسم الجريدة / الصفحة</label>
-                                <input type="text" id="set-site-name" placeholder="مثال: جريدة الإسكندرية اليوم" class="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:border-yellow-500 focus:outline-none font-bold">
-                            </div>
-                            <div>
-                                <label class="block text-sm font-bold text-slate-700 mb-1">الشعار النصي أسفل الاسم</label>
-                                <input type="text" id="set-tagline" placeholder="الحقيقة كما هي.. تغطية لحظة بلحظة" class="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:border-yellow-500 focus:outline-none">
-                            </div>
-                        </div>
-
-                        <div class="bg-slate-50 p-4 rounded-xl border border-slate-200">
-                            <label class="block text-sm font-bold text-slate-800 mb-2">لوجو الجريدة (صورة الشعار)</label>
-                            <div class="flex items-center gap-4">
-                                <img id="set-logo-preview" src="" class="w-16 h-16 rounded-xl object-cover border-2 border-yellow-400 bg-white hidden">
-                                <input type="file" accept="image/*" onchange="handleLogoUpload(this)" class="text-xs bg-white p-2 rounded-lg border border-slate-300 flex-1">
-                            </div>
-                            <input type="hidden" id="set-logo-data">
-                        </div>
-
-                        <div>
-                            <label class="block text-sm font-bold text-slate-700 mb-1">نص شريط الأخبار العاجلة المتحرك</label>
-                            <input type="text" id="set-breaking" placeholder="اكتب هنا الأخبار العاجلة التي تظهر في الشريط العلوي..." class="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:border-yellow-500 focus:outline-none">
-                        </div>
-
-                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2 border-t">
-                            <div>
-                                <label class="block text-sm font-bold text-slate-700 mb-1">نوع الخط العربي للموقع</label>
-                                <select id="set-font" class="w-full px-4 py-2.5 rounded-xl border border-slate-300 bg-white font-bold">
-                                    <option value="'Cairo', sans-serif">خط القاهرة (Cairo - عصري صحفي)</option>
-                                    <option value="'Tajawal', sans-serif">خط تجول (Tajawal - أنيق وواضح)</option>
-                                    <option value="'Almarai', sans-serif">خط المراعي (Almarai - رسمي)</option>
-                                    <option value="'Changa', sans-serif">خط تشانجا (Changa - عريض للعناوين)</option>
-                                    <option value="'Amiri', serif">خط أميري (Amiri - كلاسيكي للجرائد)</option>
-                                </select>
-                            </div>
-                            <div>
-                                <label class="block text-sm font-bold text-slate-700 mb-1">حجم الخط الأساسي</label>
-                                <select id="set-font-size" class="w-full px-4 py-2.5 rounded-xl border border-slate-300 bg-white font-bold">
-                                    <option value="15">متوسط (15px)</option>
-                                    <option value="16" selected>قياسي مريح (16px)</option>
-                                    <option value="18">كبير للقراءة (18px)</option>
-                                </select>
-                            </div>
-                        </div>
-
-                        <div class="grid grid-cols-2 gap-4 pt-2 border-t">
-                            <div>
-                                <label class="block text-sm font-bold text-slate-700 mb-1">اللون الأساسي (الهوية الصفراء)</label>
-                                <div class="flex items-center gap-2">
-                                    <input type="color" id="set-primary-color" value="#facc15" class="w-12 h-10 rounded cursor-pointer border">
-                                    <span class="text-xs text-slate-500">افتراضي: #facc15</span>
-                                </div>
-                            </div>
-                            <div>
-                                <label class="block text-sm font-bold text-slate-700 mb-1">اللون الداكن (الهيدر والفوتر)</label>
-                                <div class="flex items-center gap-2">
-                                    <input type="color" id="set-dark-color" value="#0f172a" class="w-12 h-10 rounded cursor-pointer border">
-                                    <span class="text-xs text-slate-500">افتراضي: #0f172a</span>
-                                </div>
-                            </div>
-                        </div>
-
-                        <button type="submit" id="save-settings-btn" class="w-full brand-bg hover:bg-yellow-500 text-slate-950 font-black py-3.5 rounded-xl shadow-md transition text-base">
-                            <i class="fa-solid fa-floppy-disk ml-1"></i> حفظ وتطبيق التغييرات على الموقع فوراً
-                        </button>
-                    </form>
-                </div>
-            </div>
-
-            <div class="lg:col-span-5 space-y-6">
-                <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
-                    <h2 class="text-xl font-black text-slate-900 mb-2 flex items-center gap-2">
-                        <i class="fa-solid fa-users-gear text-yellow-500"></i> إدارة المحررين
-                    </h2>
-                    <p class="text-xs text-slate-500 mb-5 pb-3 border-b">أضف محررين جدد باسم مستخدم وكلمة مرور فقط بدون أي قيود أو إيميلات.</p>
-
-                    <form id="add-editor-form" class="space-y-3 bg-slate-50 p-4 rounded-xl border border-slate-200 mb-6">
-                        <h3 class="text-sm font-bold text-slate-800">إضافة محرر جديد</h3>
-                        <div>
-                            <input type="text" id="new-ed-user" required placeholder="اسم المستخدم (مثال: AHMEDA)" class="w-full px-3.5 py-2 rounded-lg border border-slate-300 text-sm text-left font-bold bg-white" dir="ltr">
-                        </div>
-                        <div>
-                            <input type="text" id="new-ed-pass" required placeholder="كلمة المرور (مثال: 123456)" class="w-full px-3.5 py-2 rounded-lg border border-slate-300 text-sm text-left bg-white" dir="ltr">
-                        </div>
-                        <button type="submit" class="w-full dark-bg hover:bg-slate-800 brand-text font-bold py-2.5 rounded-lg text-sm transition">
-                            <i class="fa-solid fa-user-plus ml-1"></i> حفظ وإضافة المحرر
-                        </button>
-                    </form>
-
-                    <h3 class="text-sm font-bold text-slate-700 mb-3">قائمة المحررين المعتمدين حالياً:</h3>
-                    <div id="editors-list" class="space-y-2.5">
-                        <div class="p-3 bg-yellow-50 border border-yellow-200 rounded-xl flex justify-between items-center text-xs">
-                            <div>
-                                <span class="font-black text-slate-900">AHMEDA</span>
-                                <span class="text-slate-500 mr-2">(حساب افتراضي | باسورد: 123456)</span>
-                            </div>
-                            <span class="bg-yellow-400 text-slate-950 font-bold px-2 py-0.5 rounded">أساسي</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </main>
-    </div>
-
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-        import { getDatabase, ref, set, push, onValue, remove } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
-
-        const firebaseConfig = {
-            apiKey: "AIzaSyAccVmtHXNNm1eq-rVn-sRraWa7JqLDTQc",
-            authDomain: "sheko-3817f.firebaseapp.com",
-            databaseURL: "https://sheko-3817f-default-rtdb.firebaseio.com",
-            projectId: "sheko-3817f",
-            storageBucket: "sheko-3817f.firebasestorage.app",
-            messagingSenderId: "267877115512",
-            appId: "1:267877115512:web:1efcccf07d090a438e6f8d"
-        };
-
-        const app = initializeApp(firebaseConfig);
-        const db = getDatabase(app);
-
-        document.getElementById('admin-login-form').addEventListener('submit', (e) => {
-            e.preventDefault();
-            const u = document.getElementById('admin-user').value.trim();
-            const p = document.getElementById('admin-pass').value.trim();
-            if ((u === 'AHMEDD' || u === 'ahmedsheko123') && (p === 'Aa123456789' || p === '123456')) {
-                sessionStorage.setItem('master_admin', 'true');
-                initAdmin();
-            } else {
-                document.getElementById('admin-error').classList.remove('hidden');
-            }
-        });
-
-        function initAdmin() {
-            document.getElementById('admin-login-screen').classList.add('hidden');
-            document.getElementById('admin-dashboard').classList.remove('hidden');
-            loadCurrentSettings();
-            loadEditorsList();
-        }
-
-        window.adminLogout = () => {
-            sessionStorage.removeItem('master_admin');
-            location.reload();
-        };
-
-        if (sessionStorage.getItem('master_admin') === 'true') initAdmin();
-
-        window.handleLogoUpload = (input) => {
-            const file = input.files[0];
-            if (!file) return;
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                const img = new Image();
-                img.onload = () => {
-                    const canvas = document.createElement('canvas');
-                    canvas.width = 200;
-                    canvas.height = 200;
-                    const ctx = canvas.getContext('2d');
-                    ctx.drawImage(img, 0, 0, 200, 200);
-                    const dataUrl = canvas.toDataURL('image/png');
-                    document.getElementById('set-logo-data').value = dataUrl;
-                    const prev = document.getElementById('set-logo-preview');
-                    prev.src = dataUrl;
-                    prev.classList.remove('hidden');
-                };
-                img.src = e.target.result;
-            };
-            reader.readAsDataURL(file);
-        };
-
-        function loadCurrentSettings() {
-            onValue(ref(db, 'settings'), (snap) => {
-                const s = snap.val();
-                if (!s) return;
-                if (s.siteName) document.getElementById('set-site-name').value = s.siteName;
-                if (s.tagline) document.getElementById('set-tagline').value = s.tagline;
-                if (s.breakingNews) document.getElementById('set-breaking').value = s.breakingNews;
-                if (s.fontFamily) document.getElementById('set-font').value = s.fontFamily;
-                if (s.fontSize) document.getElementById('set-font-size').value = s.fontSize;
-                if (s.primaryColor) document.getElementById('set-primary-color').value = s.primaryColor;
-                if (s.darkColor) document.getElementById('set-dark-color').value = s.darkColor;
-                if (s.logoUrl) {
-                    document.getElementById('set-logo-data').value = s.logoUrl;
-                    const prev = document.getElementById('set-logo-preview');
-                    prev.src = s.logoUrl;
-                    prev.classList.remove('hidden');
-                }
-            });
-        }
-
-        document.getElementById('settings-form').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const btn = document.getElementById('save-settings-btn');
-            btn.disabled = true;
-            btn.textContent = 'جاري الحفظ...';
-
-            const settingsData = {
-                siteName: document.getElementById('set-site-name').value || 'الصحيفة الإخبارية',
-                tagline: document.getElementById('set-tagline').value || 'الحقيقة كما هي.. تغطية لحظة بلحظة',
-                breakingNews: document.getElementById('set-breaking').value || 'أهلاً بكم في منصتنا الإخبارية الشاملة',
-                fontFamily: document.getElementById('set-font').value,
-                fontSize: document.getElementById('set-font-size').value,
-                primaryColor: document.getElementById('set-primary-color').value,
-                darkColor: document.getElementById('set-dark-color').value,
-                logoUrl: document.getElementById('set-logo-data').value
-            };
-
-            try {
-                await set(ref(db, 'settings'), settingsData);
-                alert('✅ تم حفظ الإعدادات وتحديث هوية الموقع بالكامل لجميع الزوار!');
-            } catch (err) {
-                alert('خطأ في الحفظ: ' + err.message);
-            } finally {
-                btn.disabled = false;
-                btn.innerHTML = '<i class="fa-solid fa-floppy-disk ml-1"></i> حفظ وتطبيق التغييرات على الموقع فوراً';
-            }
-        });
-
-        document.getElementById('add-editor-form').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const username = document.getElementById('new-ed-user').value.trim();
-            const password = document.getElementById('new-ed-pass').value.trim();
-            if (!username || !password) return;
-
-            try {
-                await push(ref(db, 'editors'), { username, password });
-                alert(`✅ تم إضافة المحرر (${username}) بنجاح! يمكنه الدخول الآن.`);
-                e.target.reset();
-            } catch (err) {
-                alert('خطأ أثناء الإضافة: ' + err.message);
-            }
-        });
-
-        function loadEditorsList() {
-            onValue(ref(db, 'editors'), (snap) => {
-                const data = snap.val();
-                const list = document.getElementById('editors-list');
-                let html = `
-                    <div class="p-3 bg-yellow-50 border border-yellow-200 rounded-xl flex justify-between items-center text-xs">
-                        <div>
-                            <span class="font-black text-slate-900">AHMEDA</span>
-                            <span class="text-slate-500 mr-2">(افتراضي | باسورد: 123456)</span>
-                        </div>
-                        <span class="bg-yellow-400 text-slate-950 font-bold px-2 py-0.5 rounded">أساسي</span>
-                    </div>`;
-                if (data) {
-                    Object.keys(data).forEach(k => {
-                        html += `
-                            <div class="p-3 bg-slate-50 border border-slate-200 rounded-xl flex justify-between items-center text-xs">
-                                <div>
-                                    <span class="font-black text-slate-900">${data[k].username}</span>
-                                    <span class="text-slate-500 mr-2">(الباسورد: ${data[k].password})</span>
-                                </div>
-                                <button onclick="deleteEditor('${k}')" class="text-red-500 hover:bg-red-100 px-2 py-1 rounded font-bold">حذف</button>
-                            </div>`;
-                    });
-                }
-                list.innerHTML = html;
-            });
-        }
-
-        window.deleteEditor = async (id) => {
-            if (confirm('حذف هذا المحرر؟')) {
-                await remove(ref(db, 'editors/' + id));
-            }
-        };
-    </script>
-</body>
-</html>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex,nofollow"><title>Owner Dashboard | The Spotlight</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<style>:root{--primary-yellow:#facc15;--primary-dark:#0f172a}body{font-family:Inter,Arial,sans-serif;background:#f1f5f9;color:#0f172a}.brand{background:var(--primary-yellow)}.dark{background:var(--primary-dark)}.accent{color:#eab308}input,select,textarea{outline:none}.field{width:100%;padding:10px 12px;border:1px solid #cbd5e1;border-radius:10px;background:#fff}.card{background:#fff;border:1px solid #e2e8f0;border-radius:18px;padding:22px;box-shadow:0 2px 8px #0f172a08}</style>
+</head><body class="min-h-screen">
+<div id="dashboard">
+<header class="dark text-white border-b-4 border-yellow-400 sticky top-0 z-20"><div class="max-w-7xl mx-auto p-4 flex flex-wrap justify-between items-center gap-3"><div class="flex items-center gap-3"><span class="brand text-slate-950 rounded-lg px-3 py-2 font-black"><i class="fa-solid fa-crown mr-1"></i> OWNER</span><div><h1 class="font-black text-lg">The Spotlight — Control Center</h1><p class="text-xs text-slate-300">Full website management · Test mode</p></div></div><div class="flex gap-2"><a href="index.html" target="_blank" class="brand text-slate-950 font-bold text-sm px-4 py-2 rounded-lg">View Website</a><a href="editor.html" class="bg-slate-700 text-white font-bold text-sm px-4 py-2 rounded-lg">Open Publisher</a></div></div></header>
+<main class="max-w-7xl mx-auto p-4 md:p-7 grid lg:grid-cols-2 gap-6">
+<section class="card"><h2 class="text-xl font-black mb-1"><i class="fa-solid fa-palette accent mr-2"></i>Brand & Website Settings</h2><p class="text-sm text-slate-500 mb-5">Change the website identity and visual style.</p>
+<form id="settings-form" class="space-y-3">
+<label class="block text-sm font-bold">Website name<input id="site-name" class="field mt-1" placeholder="The Spotlight"></label>
+<label class="block text-sm font-bold">Tagline<input id="tagline" class="field mt-1" placeholder="News that matters"></label>
+<label class="block text-sm font-bold">Breaking news ticker<input id="breaking" class="field mt-1" placeholder="Latest headlines..."></label>
+<label class="block text-sm font-bold">Logo image<input id="logo-file" type="file" accept="image/*" class="field mt-1"><input id="logo-url" type="hidden"></label><img id="logo-preview" class="hidden w-20 h-20 object-contain rounded border p-1" alt="Logo preview">
+<div class="grid grid-cols-2 gap-3"><label class="text-sm font-bold">Primary yellow<input id="primary-color" type="color" value="#facc15" class="field h-12 mt-1"></label><label class="text-sm font-bold">Dark color<input id="dark-color" type="color" value="#0f172a" class="field h-12 mt-1"></label></div>
+<label class="block text-sm font-bold">Font family<select id="font-family" class="field mt-1"><option value="Arial, sans-serif">Arial</option><option value="Inter, sans-serif">Inter</option><option value="Georgia, serif">Georgia</option></select></label>
+<button class="brand w-full py-3 rounded-xl font-black" id="save-settings">Save Website Settings</button></form></section>
+<section class="card"><h2 class="text-xl font-black mb-1"><i class="fa-solid fa-users accent mr-2"></i>Editor Accounts & Permissions</h2><p class="text-sm text-slate-500 mb-4">Create editor usernames and choose what each editor will be allowed to do.</p>
+<form id="editor-form" class="space-y-3 mb-5"><label class="block text-sm font-bold">Editor username<input id="editor-username" required minlength="3" maxlength="30" class="field mt-1" placeholder="news_editor"></label>
+<div class="grid grid-cols-3 gap-2 text-xs"><label class="bg-slate-50 p-3 rounded-lg"><input type="checkbox" id="perm-publish" checked> Publish</label><label class="bg-slate-50 p-3 rounded-lg"><input type="checkbox" id="perm-edit" checked> Edit</label><label class="bg-slate-50 p-3 rounded-lg"><input type="checkbox" id="perm-delete"> Delete</label></div>
+<div class="bg-amber-50 border border-amber-200 rounded-lg p-3 text-xs text-amber-900">Passwords are intentionally disabled during testing and are not saved in the database. After testing, secure sign-in will be enabled so you can set a password for each editor.</div>
+<button class="dark text-white w-full py-3 rounded-xl font-bold"><i class="fa-solid fa-user-plus mr-1"></i> Add Editor</button></form>
+<div id="editors-list" class="space-y-2"><p class="text-sm text-slate-400">Loading editors...</p></div></section>
+<section class="card lg:col-span-2"><div class="flex flex-wrap justify-between items-center gap-3 mb-4"><div><h2 class="text-xl font-black"><i class="fa-regular fa-newspaper accent mr-2"></i>Published Articles</h2><p class="text-sm text-slate-500">Review and remove articles from the website.</p></div><a href="editor.html" class="brand px-4 py-2 rounded-lg text-sm font-black">Create New Article</a></div><div id="articles-list" class="grid md:grid-cols-2 gap-3"><p class="text-sm text-slate-400">Loading articles...</p></div></section>
+<section class="card lg:col-span-2"><h2 class="text-lg font-black mb-2">About Test Mode</h2><p class="text-sm text-slate-600">Login is temporarily bypassed while you test the website. Anyone who can access these pages may use the dashboard. Do not publish this test version publicly. Before launch, enable Firebase Authentication and restrictive Realtime Database security rules.</p></section>
+</main></div>
+<script type="module">
+import {initializeApp} from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
+import {getDatabase,ref,set,push,onValue,remove} from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js';
+const firebaseConfig = {
+  apiKey: "AIzaSyAccVmtHXNNm1eq-rVn-sRraWa7JqLDTQc",
+  authDomain: "sheko-3817f.firebaseapp.com",
+  databaseURL: "https://sheko-3817f-default-rtdb.firebaseio.com",
+  projectId: "sheko-3817f",
+  storageBucket: "sheko-3817f.firebasestorage.app",
+  messagingSenderId: "267877115512",
+  appId: "1:267877115512:web:1efcccf07d090a438e6f8d"
+};
+const app=initializeApp(firebaseConfig),db=getDatabase(app);
+const $=id=>document.getElementById(id);
+const safe=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+let editorsCache={},articlesCache={};
+function showSettings(s={}){ $('site-name').value=s.siteName||'The Spotlight';$('tagline').value=s.tagline||'';$('breaking').value=s.breakingNews||'';$('primary-color').value=s.primaryColor||'#facc15';$('dark-color').value=s.darkColor||'#0f172a';$('font-family').value=s.fontFamily||'Arial, sans-serif';if(s.logoUrl){$('logo-url').value=s.logoUrl;$('logo-preview').src=s.logoUrl;$('logo-preview').classList.remove('hidden')}}
+onValue(ref(db,'settings'),snap=>showSettings(snap.val()||{}),err=>alert('Settings read error: '+err.message));
+onValue(ref(db,'editors'),snap=>{editorsCache=snap.val()||{};renderEditors()},err=>$('editors-list').textContent='Could not load editors: '+err.message);
+onValue(ref(db,'articles'),snap=>{articlesCache=snap.val()||{};renderArticles()},err=>$('articles-list').textContent='Could not load articles: '+err.message);
+$('logo-file').addEventListener('change',e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{$('logo-url').value=r.result;$('logo-preview').src=r.result;$('logo-preview').classList.remove('hidden')};r.readAsDataURL(f)});
+$('settings-form').addEventListener('submit',async e=>{e.preventDefault();const b=$('save-settings');b.disabled=true;try{await set(ref(db,'settings'),{siteName:$('site-name').value.trim(),tagline:$('tagline').value.trim(),breakingNews:$('breaking').value.trim(),primaryColor:$('primary-color').value,darkColor:$('dark-color').value,fontFamily:$('font-family').value,logoUrl:$('logo-url').value});alert('Website settings saved.')}catch(err){alert('Save failed: '+err.message)}finally{b.disabled=false}});
+$('editor-form').addEventListener('submit',async e=>{e.preventDefault();const username=$('editor-username').value.trim();if(!/^[a-zA-Z0-9._-]{3,30}$/.test(username)){alert('Use 3–30 letters, numbers, dots, underscores or hyphens.');return};if(Object.values(editorsCache).some(x=>(x.username||'').toLowerCase()===username.toLowerCase())){alert('This username already exists.');return};try{await push(ref(db,'editors'),{username,permissions:{publish:$('perm-publish').checked,edit:$('perm-edit').checked,delete:$('perm-delete').checked},createdAt:Date.now()});e.target.reset();$('perm-publish').checked=true;$('perm-edit').checked=true;alert('Editor added. Password setup will be available when secure login is enabled.')}catch(err){alert('Could not add editor: '+err.message)}});
+function renderEditors(){const entries=Object.entries(editorsCache);$('editors-list').innerHTML=entries.length?entries.map(([id,x])=>`<div class="border rounded-xl p-3 flex flex-wrap items-center justify-between gap-2"><div><b>${safe(x.username)}</b><div class="text-xs text-slate-500 mt-1">${x.permissions?.publish?'Publish · ':''}${x.permissions?.edit?'Edit · ':''}${x.permissions?.delete?'Delete':''}</div></div><button data-delete-editor="${safe(id)}" class="text-red-600 text-sm font-bold">Remove</button></div>`).join(''):'<p class="text-sm text-slate-400">No editor accounts yet.</p>';document.querySelectorAll('[data-delete-editor]').forEach(b=>b.onclick=async()=>{if(confirm('Remove this editor?'))try{await remove(ref(db,'editors/'+b.dataset.deleteEditor))}catch(e){alert(e.message)}})}
+function renderArticles(){const entries=Object.entries(articlesCache).sort((a,b)=>(b[1].timestamp||0)-(a[1].timestamp||0));$('articles-list').innerHTML=entries.length?entries.map(([id,a])=>`<div class="border rounded-xl p-3 flex gap-3 items-start"><img src="${safe(a.coverImage||'https://placehold.co/96x72?text=News')}" class="w-20 h-16 object-cover rounded-lg"><div class="min-w-0 flex-1"><b class="text-sm">${safe(a.title||'Untitled')}</b><p class="text-xs text-slate-500 mt-1">${safe(a.category||'News')} · ${safe(a.author||'Editorial team')}</p></div><button data-delete-article="${safe(id)}" class="text-red-600 text-sm font-bold">Delete</button></div>`).join(''):'<p class="text-sm text-slate-400">No published articles yet.</p>';document.querySelectorAll('[data-delete-article]').forEach(b=>b.onclick=async()=>{if(confirm('Permanently delete this article?'))try{await remove(ref(db,'articles/'+b.dataset.deleteArticle))}catch(e){alert(e.message)}})}
+</script></body></html>

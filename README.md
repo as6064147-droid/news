@@ -1,97 +1,18 @@
-# جريدتي / The Spotlight — منصة إخبارية بـ Firebase
+# The Spotlight — Temporary Test Build
 
-موقع أخبار كامل بواجهة عامة + لوحة تحكم للمسؤول + لوحة للمحررين.
+The public site, Owner Dashboard, and Publisher Studio use Firebase Realtime Database.
 
----
+## Test mode
+- `index.html`: public website
+- `admin.html`: Owner Dashboard; login is temporarily bypassed
+- `editor.html`: Publisher Studio; login is temporarily bypassed
+- Owner can edit website branding, colors, logo, ticker, editor usernames/permissions, and remove articles.
+- Editor passwords are not stored. Secure password creation will be enabled when Firebase Authentication is activated after testing.
 
-## 🔐 الدخول
+## Database paths
+- `/settings` — site identity and visual settings
+- `/articles` — published articles
+- `/editors` — editor usernames and permission flags
 
-### لوحة المسؤول — `admin.html`
-
-| | |
-|---|---|
-| **اسم المستخدم** | `ahmedsheko123` |
-| **كلمة المرور** | *التي تختارها أنت في Firebase* |
-
-> كلمة المرور **لم تعد مكتوبة في الكود**. الدخول يمر عبر Firebase Auth.
-> اسم المستخدم يُترجم داخلياً إلى إيميل حساب الأدمن الموجود في `config.js`:
-> `as6064147@gmail.com`
-
-يمكن أيضاً تسجيل الدخول بالإيميل الكامل بدل اسم المستخدم.
-
-### لوحة المحرر — `editor.html`
-كل محرر يدخل بإيميله وكلمة المرور التي أنشأها له المسؤول من تبويب **Editors**.
-
----
-
-## ⚙️ خطوات الإعداد (مرة واحدة فقط)
-
-### 1) فعّل تسجيل الدخول بالإيميل والباسورد
-**Firebase Console → Authentication → Sign-in method → Email/Password → Enable**
-
-### 2) أنشئ حساب المسؤول
-**Firebase Console → Authentication → Users → Add user**
-
-- Email: `as6064147@gmail.com`
-- Password: كلمة المرور التي تريدها (٦ أحرف على الأقل)
-
-بعد كده تقدر تدخل من `admin.html` بـ `ahmedsheko123` + كلمة المرور دي.
-
-### 3) انشر قواعد الأمان
-**Firebase Console → Firestore Database → Rules**
-
-انسخ محتوى `firestore-rules.txt` بالكامل، الصقه، ثم **Publish**.
-
-### 4) أضف الدومين
-**Firebase Console → Authentication → Settings → Authorized domains**
-
-أضف الدومين اللي هترفع عليه الموقع (مثلاً `username.github.io` أو نطاقك).
-`localhost` مضاف تلقائياً للتجربة المحلية.
-
----
-
-## 🛡️ ماذا تحمي القواعد؟
-
-| المجموعة | قراءة | كتابة |
-|---|---|---|
-| `site` (الألوان والنصوص) | الجميع | المسؤول فقط |
-| `roles` (قائمة المحررين) | المسؤول + صاحب السجل | المسؤول فقط |
-| `articles` | الجميع | محرر/مسؤول فقط |
-
-- المحرر **لا يستطيع** تعديل أو حذف مقال غيره.
-- المحرر **لا يستطيع** تثبيت مقال في الصفحة الرئيسية (⭐ Pin) — للمسؤول فقط.
-- المحرر **لا يستطيع** تغيير صاحب المقال.
-- أي كتابة من غير تسجيل دخول = مرفوضة.
-
----
-
-## 📁 الملفات
-
-| الملف | الوظيفة |
-|---|---|
-| `index.html` | الصفحة الرئيسية للزوار |
-| `admin.html` | لوحة المسؤول (مقالات، تصميم، تصنيفات، محررين، حسابي) |
-| `editor.html` | لوحة المحرر |
-| `common.js` | الكود المشترك + بوابة الدخول + إدارة المقالات |
-| `config.js` | إعدادات Firebase + اسم مستخدم المسؤول |
-| `panel.css` | تنسيق لوحات التحكم |
-| `firestore-rules.txt` | قواعد أمان Firestore |
-
----
-
-## ✨ تبويبات لوحة المسؤول
-
-1. **📰 Articles** — نشر / تعديل / حذف / تثبيت المقالات
-2. **🎨 Design & Colors** — الاسم، الشعار، ٢٩ لون، معاينة مباشرة
-3. **📋 Categories & Ticker** — التصنيفات والشريط الإخباري
-4. **👥 Editors** — إنشاء حسابات المحررين وإدارتهم
-5. **🔐 My Account** — تغيير كلمة مرور المسؤول
-
----
-
-## ⚠️ ملاحظات أمنية
-
-- لو حصلت رسالة *"Wrong username or password"* أول مرة: الحساب لسه ما اتعملش في Firebase — راجع الخطوة ٢.
-- كلمة مرور المحررين **لا تُخزَّن** في Firestore. لو نسيها محرر، اضغط **Send reset link**.
-- صفحة `admin.html` و `editor.html` عليها `noindex` — مش هتظهر في جوجل.
-- لوحة المسؤول تتحقق من هوية المستخدم عبر Firebase، مش عبر `localStorage` زي الأول.
+## Important security warning
+This build is for private testing only. Do not publish it to a public domain while login is bypassed. Firebase Realtime Database Rules must be configured separately; the supplied Firestore rules do not protect Realtime Database. Back up the database before deployment.
