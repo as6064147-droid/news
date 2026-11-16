@@ -2,7 +2,6 @@
 <html lang="ar" dir="rtl">
 <head>
     <title>استوديو المحررين - نشر وتحديث الأخبار</title>
-    
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script src="https://cdn.tailwindcss.com"></script>
@@ -28,21 +27,7 @@
         .brand-text { color: var(--primary-yellow); }
         .brand-border { border-color: var(--primary-yellow); }
         .dark-bg { background-color: var(--primary-dark); }
-        @keyframes marquee {
-            0% { transform: translateX(-100%); }
-            100% { transform: translateX(100%); }
-        }
-        .animate-ticker {
-            display: inline-block;
-            white-space: nowrap;
-            animation: marquee 28s linear infinite;
-        }
-        .animate-ticker:hover { animation-play-state: paused; }
-        .article-body h3 { font-size: 1.35rem; font-weight: 800; margin: 1.25rem 0 0.5rem; color: #0f172a; border-right: 4px solid var(--primary-yellow); padding-right: 0.75rem; }
-        .article-body blockquote { background: #fefce8; border-right: 4px solid var(--primary-yellow); padding: 1rem 1.25rem; margin: 1.25rem 0; font-weight: 700; border-radius: 0.5rem; color: #1e293b; }
-        .article-body ul { list-style-type: disc; margin-right: 1.5rem; margin-bottom: 1rem; }
     </style>
-
 </head>
 <body class="min-h-screen bg-slate-100">
 
@@ -218,23 +203,21 @@
     </div>
 
     <script type="module">
-        
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-  import { getDatabase, ref, set, get, push, onValue, remove, update } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+        import { getDatabase, ref, get, push, onValue, remove } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
-  const firebaseConfig = {
-    apiKey: "AIzaSyAccVmtHXNNm1eq-rVn-sRraWa7JqLDTQc",
-    authDomain: "sheko-3817f.firebaseapp.com",
-    databaseURL: "https://sheko-3817f-default-rtdb.firebaseio.com",
-    projectId: "sheko-3817f",
-    storageBucket: "sheko-3817f.firebasestorage.app",
-    messagingSenderId: "267877115512",
-    appId: "1:267877115512:web:1efcccf07d090a438e6f8d"
-  };
+        const firebaseConfig = {
+            apiKey: "AIzaSyAccVmtHXNNm1eq-rVn-sRraWa7JqLDTQc",
+            authDomain: "sheko-3817f.firebaseapp.com",
+            databaseURL: "https://sheko-3817f-default-rtdb.firebaseio.com",
+            projectId: "sheko-3817f",
+            storageBucket: "sheko-3817f.firebasestorage.app",
+            messagingSenderId: "267877115512",
+            appId: "1:267877115512:web:1efcccf07d090a438e6f8d"
+        };
 
-  const app = initializeApp(firebaseConfig);
-  const db = getDatabase(app);
-
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
 
         window.handleImageUpload = (input, previewId, hiddenId) => {
             const file = input.files[0];

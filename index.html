@@ -2,7 +2,6 @@
 <html lang="ar" dir="rtl">
 <head>
     <title id="page-title">بوابة الأخبار الاحترافية</title>
-    
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script src="https://cdn.tailwindcss.com"></script>
@@ -42,7 +41,6 @@
         .article-body blockquote { background: #fefce8; border-right: 4px solid var(--primary-yellow); padding: 1rem 1.25rem; margin: 1.25rem 0; font-weight: 700; border-radius: 0.5rem; color: #1e293b; }
         .article-body ul { list-style-type: disc; margin-right: 1.5rem; margin-bottom: 1rem; }
     </style>
-
 </head>
 <body class="min-h-screen flex flex-col">
 
@@ -54,7 +52,7 @@
             </span>
             <div class="overflow-hidden flex-1 relative h-5">
                 <div id="breaking-text" class="animate-ticker font-semibold text-slate-100">
-                    جاري تحميل آخر الأخبار العاجلة والتغطيات الحصرية...
+                    أهلاً بكم في منصتنا الإخبارية الشاملة.. تغطية حصرية على مدار الساعة
                 </div>
             </div>
             <span id="current-date" class="hidden md:inline text-slate-400 text-xs shrink-0"></span>
@@ -138,28 +136,35 @@
     </footer>
 
     <script type="module">
-        
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-  import { getDatabase, ref, set, get, push, onValue, remove, update } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+        import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
-  const firebaseConfig = {
-    apiKey: "AIzaSyAccVmtHXNNm1eq-rVn-sRraWa7JqLDTQc",
-    authDomain: "sheko-3817f.firebaseapp.com",
-    databaseURL: "https://sheko-3817f-default-rtdb.firebaseio.com",
-    projectId: "sheko-3817f",
-    storageBucket: "sheko-3817f.firebasestorage.app",
-    messagingSenderId: "267877115512",
-    appId: "1:267877115512:web:1efcccf07d090a438e6f8d"
-  };
+        const firebaseConfig = {
+            apiKey: "AIzaSyAccVmtHXNNm1eq-rVn-sRraWa7JqLDTQc",
+            authDomain: "sheko-3817f.firebaseapp.com",
+            databaseURL: "https://sheko-3817f-default-rtdb.firebaseio.com",
+            projectId: "sheko-3817f",
+            storageBucket: "sheko-3817f.firebasestorage.app",
+            messagingSenderId: "267877115512",
+            appId: "1:267877115512:web:1efcccf07d090a438e6f8d"
+        };
 
-  const app = initializeApp(firebaseConfig);
-  const db = getDatabase(app);
-
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
 
         document.getElementById('current-date').textContent = new Date().toLocaleDateString('ar-EG', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
 
         let allArticles = [];
         let currentCategory = 'الكل';
+
+        // Safety timeout in case Firebase Realtime Database rules block read or network hangs
+        const fallbackTimer = setTimeout(() => {
+            const loader = document.getElementById('loader');
+            if (!loader.classList.contains('hidden')) {
+                loader.classList.add('hidden');
+                renderNews();
+            }
+        }, 4000);
 
         onValue(ref(db, 'settings'), (snapshot) => {
             const s = snapshot.val();
@@ -178,9 +183,12 @@
             if (s.logoUrl) {
                 document.getElementById('logo-container').innerHTML = `<img src="${s.logoUrl}" alt="Logo" class="w-full h-full object-cover">`;
             }
+        }, (err) => {
+            console.warn("Settings load skipped:", err.message);
         });
 
         onValue(ref(db, 'articles'), (snapshot) => {
+            clearTimeout(fallbackTimer);
             document.getElementById('loader').classList.add('hidden');
             const data = snapshot.val();
             allArticles = [];
@@ -191,6 +199,14 @@
                 allArticles.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
             }
             renderNews();
+        }, (err) => {
+            clearTimeout(fallbackTimer);
+            document.getElementById('loader').classList.add('hidden');
+            document.getElementById('news-grid').innerHTML = `
+                <div class="col-span-full bg-red-50 rounded-2xl p-8 text-center border border-red-200">
+                    <p class="text-red-600 font-bold">تعذر الاتصال بقاعدة البيانات: ${err.message}</p>
+                    <p class="text-xs text-slate-600 mt-2">تأكد من تفعيل Realtime Database وضبط قواعد القراءة (Rules) في Firebase.</p>
+                </div>`;
         });
 
         window.filterCategory = (cat) => {
@@ -219,7 +235,7 @@
                     <div class="col-span-full bg-white rounded-2xl p-12 text-center border border-slate-200 shadow-sm">
                         <i class="fa-regular fa-newspaper text-5xl text-slate-300 mb-3"></i>
                         <h3 class="text-lg font-bold text-slate-700">لا توجد أخبار منشورة في هذا القسم حالياً</h3>
-                        <p class="text-sm text-slate-500 mt-1">يمكن للمحررين إضافة أخبار جديدة من لوحة المحرر لتظهر هنا فوراً.</p>
+                        <p class="text-sm text-slate-500 mt-1">يمكن للمحررين إضافة أخبار جديدة من <a href="editor.html" class="text-yellow-600 font-bold underline">لوحة المحرر</a> لتظهر هنا فوراً.</p>
                     </div>`;
                 return;
             }
